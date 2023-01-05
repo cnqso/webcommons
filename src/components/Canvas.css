@@ -1,0 +1,16 @@
+.tile {
+    width: 102%;
+    height: 102%;
+      display: grid;
+  place-content: center;
+  
+  }
+
+.Grid {
+    margin: 1vw;
+    gap: 0px;
+}
+
+.margin {
+    margin-right: -10px
+  }

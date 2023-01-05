@@ -1,37 +1,29 @@
-import * as React from 'react';
-import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
-import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
-import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
-import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
+import React, { useState } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-export default function ToggleButtons() {
-  const [alignment, setAlignment] = React.useState('left');
+function ToggleButtons(props) {
 
-  const handleAlignment = (event, newAlignment) => {
-    setAlignment(newAlignment);
-  };
+    const [alignment, setAlignment] = useState('road');
+  
+    const handleChange = (event, newAlignment) => {
+      setAlignment(newAlignment);
+      props.setEditSelection(newAlignment);
+    };
+  
+    return (
+      <ToggleButtonGroup
+        color="primary"
+        value={alignment}
+        exclusive
+        onChange={handleChange}
+        aria-label="Platform"
+      >
+        <ToggleButton value="road">Road</ToggleButton>
+        <ToggleButton value="residential">Residential</ToggleButton>
+        <ToggleButton value="coal">Power</ToggleButton>
+      </ToggleButtonGroup>
+    );
+  }
 
-  return (
-    <ToggleButtonGroup
-      value={alignment}
-      exclusive
-      onChange={handleAlignment}
-      aria-label="text alignment"
-    >
-      <ToggleButton value="left" aria-label="left aligned">
-        <FormatAlignLeftIcon />
-      </ToggleButton>
-      <ToggleButton value="center" aria-label="centered">
-        <FormatAlignCenterIcon />
-      </ToggleButton>
-      <ToggleButton value="right" aria-label="right aligned">
-        <FormatAlignRightIcon />
-      </ToggleButton>
-      <ToggleButton value="justify" aria-label="justified" disabled>
-        <FormatAlignJustifyIcon />
-      </ToggleButton>
-    </ToggleButtonGroup>
-  );
-}
+  export default ToggleButtons
