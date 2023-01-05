@@ -1,16 +1,23 @@
-.tile {
-    width: 102%;
-    height: 102%;
-      display: grid;
-  place-content: center;
-  
-  }
-
 .Grid {
-    margin: 1vw;
-    gap: 0px;
+  /* width: 960px;
+  height: 800px; */
+  display: grid;
+  /* grid-template-columns: repeat(120, 8px); */
+  margin: 0px;
+  gap: 0px;
 }
 
-.margin {
-    margin-right: -10px
-  }
+.tile {
+  width: 8px;
+  height: 8px;
+  display: grid;
+  place-content: center;
+}
+
+.prez {
+  font: 'small';
+  color: 'white';
+  background: 'darkorchid';
+  padding: 10;
+  padding: 20
+}
