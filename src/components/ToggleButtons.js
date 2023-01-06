@@ -22,6 +22,7 @@ function ToggleButtons(props) {
         <ToggleButton value="road">Road</ToggleButton>
         <ToggleButton value="residential">Residential</ToggleButton>
         <ToggleButton value="coal">Power</ToggleButton>
+        <ToggleButton value="delete">Bulldoze</ToggleButton>
       </ToggleButtonGroup>
     );
   }
