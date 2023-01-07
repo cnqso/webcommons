@@ -49,6 +49,10 @@ function checksum(array) {
   return (chk & 0xffffffff).toString(16);
 }
 
+const buildPermit = (yMin, xMin, building) => {
+  console.log(yMin, xMin, building);
+}
+
 const RowMemo = React.memo(Row);
 
 const Canvas = (props) => {
@@ -70,7 +74,6 @@ const Canvas = (props) => {
       console.log("Out of bounds");
       return false;
     } 
-
     for (let i = yMin; i <= yMax; i++) {
       for (let j = xMin; j <= xMax; j++) {
         if (tiles[i][j].color != "#000000") {
@@ -80,6 +83,16 @@ const Canvas = (props) => {
       }
     }
     return true;
+  }
+
+  const drawBuilding = (yMin, yMax, xMin, xMax, color) => {
+  let tempTiles = tiles;
+      for (let i = yMin; i <= yMax; i++) {
+        for (let j = xMin; j <= xMax; j++) {
+          tempTiles[i][j].color = color;
+        }
+      }
+      setTiles([...tempTiles]);
   }
 
   const editMap = (x, y) => {
@@ -111,19 +124,11 @@ const Canvas = (props) => {
     const yMin = y - (Math.floor((buildingSize - 1) / 2));
     const yMax = y + (Math.floor(buildingSize / 2));
     //console.log(xMin, xMax, yMin, yMax);
-    if (boundsempty(yMin, yMax, xMin, xMax) === true) {
-      let tempTiles = tiles;
-      for (let i = yMin; i <= yMax; i++) {
-        for (let j = xMin; j <= xMax; j++) {
-          tempTiles[i][j].color = buildingColor;
-        }
-      }
-      setTiles([...tempTiles]);
+    if (boundsempty(yMin, yMax, xMin, xMax) === true || props.editSelection === "delete") {
+      buildPermit(yMin, xMin, props.editSelection);
+      drawBuilding(yMin, yMax, xMin, xMax, buildingColor);
     }
-
-    // tempTiles[y][x].color = buildingColor;
-
-    }
+  }
   
   const handleOnClick = (coordinates) => {
     //console.log(coordinates)
@@ -137,6 +142,10 @@ const Canvas = (props) => {
       editMap(adjustedX, adjustedY)
     }
   }
+
+
+
+
 
   return (
     <div style={{ width: width, height: (height/1.2), position: "relative" }}>
