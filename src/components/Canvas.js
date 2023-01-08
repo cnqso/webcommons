@@ -49,9 +49,6 @@ function checksum(array) {
   return (chk & 0xffffffff).toString(16);
 }
 
-const buildPermit = (yMin, xMin, building) => {
-  console.log(yMin, xMin, building);
-}
 
 const RowMemo = React.memo(Row);
 
@@ -65,9 +62,9 @@ const Canvas = (props) => {
   const square = (width + height) / 60;
   const imageWidth = config.TILE_WIDTH * config.TILE_PIXELS;
   const imageHeight = config.TILE_HEIGHT*config.TILE_PIXELS;
-
   //const [hover, setHover] = useState();
   const clickxy = useRef([0,0]);
+
 
   const boundsempty = (yMin, yMax, xMin, xMax) => {
     if (xMin < 0 || yMin < 0 || xMax > config.TILE_WIDTH || yMax > config.TILE_HEIGHT) {
@@ -76,7 +73,7 @@ const Canvas = (props) => {
     } 
     for (let i = yMin; i <= yMax; i++) {
       for (let j = xMin; j <= xMax; j++) {
-        if (tiles[i][j].color != "#000000") {
+        if (tiles[i][j].color !== "#000000") {
           console.log("Space already occupied")
           return false;
         }
@@ -99,7 +96,7 @@ const Canvas = (props) => {
 
     let buildingColor = "#000000";
     let buildingSize = 0;
-    switch(props.editSelection) {
+    switch(props.editSelection.current) {
       case "road":
         buildingColor = "#463836";
         buildingSize = 1;
@@ -124,8 +121,8 @@ const Canvas = (props) => {
     const yMin = y - (Math.floor((buildingSize - 1) / 2));
     const yMax = y + (Math.floor(buildingSize / 2));
     //console.log(xMin, xMax, yMin, yMax);
-    if (boundsempty(yMin, yMax, xMin, xMax) === true || props.editSelection === "delete") {
-      buildPermit(yMin, xMin, props.editSelection);
+    if (boundsempty(yMin, yMax, xMin, xMax) === true || props.editSelection.current === "delete") {
+      props.sendRequest("POST", yMin, xMin, props.editSelection.current);
       drawBuilding(yMin, yMax, xMin, xMax, buildingColor);
     }
   }
@@ -138,7 +135,7 @@ const Canvas = (props) => {
     const tileIndex = adjustedX + (adjustedY * config.TILE_WIDTH);
     const tile = tiles[adjustedY][adjustedX];
 
-    if ("authentication" != "placeholder") {
+    if ("authentication" !== "placeholder") {
       editMap(adjustedX, adjustedY)
     }
   }
