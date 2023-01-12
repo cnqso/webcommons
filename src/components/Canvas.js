@@ -7,9 +7,16 @@ import config from "./config";
 import Row from "./Row";
 import buildingsConfig from "./buildingsConfig.json";
 
-
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
+import {
+	getDatabase,
+	ref,
+	set,
+	push,
+	onValue,
+	get,
+	child,
+} from "firebase/database";
 import { useList, useListVals } from "react-firebase-hooks/database";
 
 const firebaseConfig = {
@@ -22,11 +29,18 @@ const firebaseConfig = {
 	appId: "1:1065691708142:web:11c9050fc656410b9b11ff",
 	measurementId: "G-PQHKRQWR78",
 };
-//Initialize fb modules
 const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 const database = getDatabase(app);
+const db = getDatabase();
+const buildingsRef = ref(db, "buildings");
+//For some reason, calling the database a second time helped debounce the database calls
+//Deleting the getDatabase(app) call broke the code
+//Worth investigating, this is too ugly even for me
 
+//Since the react-zoomable-component box only takes hardcoded pixel values, we need to size it in javascript
+//This will be a pain to integrate with CSS, but at least it doesn't hurt performance
+//TODO: Fix issue where the canvas gets bigger on window expand but never shrinks
 const useWindowSize = () => {
 	const [windowSize, setWindowSize] = React.useState({
 		width: 1000,
@@ -68,32 +82,44 @@ function checksum(array) {
 	return (chk & 0xffffffff).toString(16);
 }
 
+//Custom method for generating unique chronological IDs
+//Returns a short string, functionally the time in hex plus a checksum of the x, y, and building
+//TODO: Keep x and y as ints, current implementation doesn't guarantee uniqueness
+//Maybe add firebase user ID
+function checksumID(x, y, building) {
+	var chk = 0x12345678;
+	let k = 0;
+	let array = [
+		x.toString(),
+		(y * 120).toString(),
+		building,
+		Date.now().toString(),
+	];
+	for (let i = 0; i < array.length; i++) {
+		let len = array[i].length;
+		for (let j = 0; j < len; j++) {
+			chk += array[i].charCodeAt(j) * (k + 1);
+			k++;
+		}
+	}
+	const time = Date.now().toString(16);
+	const timedChecksum = time.concat((chk & 0xffffffff).toString(16));
+	return timedChecksum;
+}
+
+//Very simple but extremely vital
+//In my limited testing, this was faster than memoizing individual tiles or the whole canvas
+//I could imagine a scenario where memoizing each tile works better.
 const RowMemo = React.memo(Row);
 
-const db = getDatabase();
-const buildingsRef = ref(db, 'buildings');
-
-
-const Canvas = (props) => {
-
-
-
-	
-	const MARGIN = 0;
-	const xError = 0.01;
-	const yError = 0.01;
+const Canvas = ({ editSelection, sendRequest }) => {
 	const { width, height } = useWindowSize();
-	const imageWidth = config.TILE_WIDTH * config.TILE_PIXELS;
-	const imageHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
+	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
+	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
 
 	const clickxy = useRef([0, 0]);
 	const [tiles, setTiles] = useState(jsonTiles);
-	const lastSnapshotLength = useRef(0);
-
-
-
-
-
+	const lastSnapshot = useRef({});
 
 	const boundsempty = (yMin, yMax, xMin, xMax) => {
 		if (
@@ -116,51 +142,50 @@ const Canvas = (props) => {
 		return true;
 	};
 
-	const drawBuilding = (yMin, yMax, xMin, xMax, color) => {
+	const drawBuilding = (yMin, yMax, xMin, xMax, color, id) => {
 		let tempTiles = tiles;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				tempTiles[i][j].color = color;
+				tempTiles[i][j].buildingId = id;
 			}
 		}
 		setTiles([...tempTiles]);
 	};
 
 	const editMap = (x, y) => {
-		let buildingColor = "#000000";
-		let buildingSize = 0;
-		switch (props.editSelection.current) {
-			case "road":
-				buildingColor = "#463836";
-				buildingSize = 1;
-				break;
-			case "residential":
-				buildingColor = "#700000";
-				buildingSize = 3;
-				break;
-			case "coal":
-				buildingColor = "#ffec41";
-				buildingSize = 5;
-				break;
-			case "delete":
-				buildingColor = "#000000";
-				buildingSize = 1;
-				break;
-			default:
-				console.log("Invalid selection");
+		//For special buildings, send to unique handlers. Otherwise, create an arbitrary building
+		if (
+			editSelection.current === "delete") {
+			deleteBuilding(tiles[y][x].buildingId);
+		} else {
+			const buildingColor = buildingsConfig[editSelection.current].color;
+			const buildingSize = buildingsConfig[editSelection.current].size;
+
+			const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingSize);
+			//console.log(xMin, xMax, yMin, yMax);
+			//TODO check delete first
+			if (boundsempty(yMin, yMax, xMin, xMax) === true) {
+				const newId = checksumID(x, y, editSelection.current);
+				sendRequest("POST", y, x, editSelection.current, newId);
+				drawBuilding(yMin, yMax, xMin, xMax, buildingColor, newId);
+				//TODO if the post request fails, the tilemap will be reverted to the previous state
+			}
+		}
+	};
+
+	const deleteBuilding = (buildingID) => {
+		if ("allowed to do this" !== "placeholder" && buildingID) {
+			try {
+			const {x, y, building} = lastSnapshot.current[buildingID];
+			const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingsConfig[building].size);
+			sendRequest("DELETE", y, x, "delete", buildingID);
+			drawBuilding(yMin, yMax, xMin, xMax, "#000000", "");
+			} catch (error) {
+				console.log(error);
+			}
 		}
 
-		//checkboundaries
-		const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingSize);
-		//console.log(xMin, xMax, yMin, yMax);
-		if (
-			boundsempty(yMin, yMax, xMin, xMax) === true ||
-			props.editSelection.current === "delete"
-		) {
-			props.sendRequest("POST", y, x, props.editSelection.current);
-			drawBuilding(yMin, yMax, xMin, xMax, buildingColor);
-			//if the post request fails, the tilemap will be reverted to the previous state
-		}
 	};
 
 	const getBounds = (x, y, size) => {
@@ -169,59 +194,63 @@ const Canvas = (props) => {
 		const yMin = y - Math.floor((size - 1) / 2);
 		const yMax = y + Math.floor(size / 2);
 		return { xMin, xMax, yMin, yMax };
-	}
+	};
 
 	const handleOnClick = (coordinates) => {
 		//console.log(coordinates)
 		const adjustedX = Math.floor(
-			(coordinates[0] + xError) / config.TILE_PIXELS
+			(coordinates[0] + config.X_ERROR) / config.TILE_PIXELS
 		);
 		const adjustedY = Math.floor(
-			(coordinates[1] + yError) / config.TILE_PIXELS
+			(coordinates[1] + config.Y_ERROR) / config.TILE_PIXELS
 		);
-		//console.log(adjustedX, adjustedY);
-		const tileIndex = adjustedX + adjustedY * config.TILE_WIDTH;
-		const tile = tiles[adjustedY][adjustedX];
 
 		if ("authentication" !== "placeholder") {
 			editMap(adjustedX, adjustedY);
 		}
 	};
 
-
+	//Listen to the database for changes and update immediately
+	//Calls once on initial render, but never closes the listener
 	useEffect(() => {
 		onValue(buildingsRef, (snapshot) => {
 			const data = snapshot.val();
-			const keys = Object.keys(data);
-			console.log(keys.length, data);
+			const lastSnapshotLength = Object.keys(lastSnapshot.current).length;
+			lastSnapshot.current = data;
 
+			const keys = Object.keys(data);
 			let tempTiles2 = tiles;
-			for (let i = lastSnapshotLength.current; i < keys.length; i++) {
+
+			//Check the previous snapshot length and render all objects after that
+			//Building IDs are chronological by time for this purpose, best of both worlds of arrays and objects
+			for (let i = lastSnapshotLength; i < keys.length; i++) {
 				let thisBuilding = data[keys[i]];
-				let { xMin, xMax, yMin, yMax } = getBounds(thisBuilding.x, thisBuilding.y, buildingsConfig[thisBuilding.building].size);
+				let { xMin, xMax, yMin, yMax } = getBounds(
+					thisBuilding.x,
+					thisBuilding.y,
+					buildingsConfig[thisBuilding.building].size
+				);
+				//This is like editMap() but doesn't change state until all calculations are done. Faster.
+				//TODO: tempTiles was already a bad enough variable name
 				for (let i = yMin; i <= yMax; i++) {
 					for (let j = xMin; j <= xMax; j++) {
-						tempTiles2[i][j].color = buildingsConfig[thisBuilding.building].color;
+						tempTiles2[i][j].color =
+							buildingsConfig[thisBuilding.building].color; //Turn back all ye who enter the 7th tab of hell
 						tempTiles2[i][j].buildingId = thisBuilding.id;
-						//Turn back all ye who enter the 6th tab of hell
 						//Splitting imperative code is hard/ugly in react and useEffect has weird scoping problems
-						//You don't know what I've been through trying to get this to work
+						//You don't know what I've been through trying to get this to run well
 						//12,000 DOM elements is a lot, and react is not built for that
 						//Those motherfuckers on stack overflow said it was impossible
 						//I had to implement a checksum to hack around react's shitty diffing. TWICE.
 						//Look at me now, 100 memos, 12,000 DOM elements, and a 5ms render time
-						//"Why not just use canvas?" you might ask
-						//Because then I can't use react and I have to write my own rendering pipeline
-						//I'm trying to be software engineer not a game dev lol
 						//Thanks for reading
-				}}
+					}
+				}
 			}
-
 			setTiles([...tempTiles2]);
-
-			lastSnapshotLength.current = keys.length;
+			//Save the length of the snapshot so that we only render the
 		});
-	  }, []);
+	}, []);
 
 	return (
 		<div
@@ -235,14 +264,14 @@ const Canvas = (props) => {
 				style={{ border: "solid 1px black" }}
 				onCreate={(viewPort) => {
 					viewPort.setBounds({
-						x: [0, imageWidth],
-						y: [0, imageHeight],
+						x: [0, mapWidth],
+						y: [0, mapHeight],
 					});
 					viewPort.camera.centerFitAreaIntoView({
 						left: 0,
 						top: 0,
-						width: imageWidth,
-						height: imageHeight,
+						width: mapWidth,
+						height: mapHeight,
 					});
 				}}
 			>
@@ -250,8 +279,8 @@ const Canvas = (props) => {
 					style={{
 						gridTemplateColumns: `repeat(${config.TILE_WIDTH}, 8px)`,
 						gridTemplateRows: `repeat(${config.TILE_HEIGHT}, 8px)`,
-						width: `${imageWidth}`,
-						height: `${imageHeight}`,
+						width: `${mapWidth}`,
+						height: `${mapHeight}`,
 					}}
 					className={"Grid"}
 					onTap={() => {

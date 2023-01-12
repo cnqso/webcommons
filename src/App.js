@@ -34,34 +34,13 @@ const database = getDatabase(app);
 
 
 
-function checksumID(x, y, building) {
-	var chk = 0x12345678;
-	let k = 0;
-	let array = [(x).toString(), (y*120).toString(), building, Date.now().toString()];
-	for (let i = 0; i < array.length; i++) {
-		let len = array[i].length;
-		for (let j = 0; j < len; j++) {
-			chk += array[i].charCodeAt(j) * (k + 1);
-			k++;
-		}
-	}
-	const time = Date.now().toString(16);
-	const timedChecksum = time.concat((chk & 0xffffffff).toString(16));
-	return timedChecksum;
-}
-
-function sendRequest(method, y, x, building, handler = "") {
+function sendRequest(method, y, x, building, buildingId, handler = "") {
 	const url = "http://localhost:8080/" + handler;
 	const body = JSON.stringify({
-		id: checksumID(y, x, building),
-		x: x, //keep
-		y: y, //keep
-		building: building, //keep
-		owner: auth.currentUser.uid, //authentication
-		power: true,
-		pop: 0,
-		dev: 0,
-		time: 61304000,
+		id: buildingId,
+		x: x,
+		y: y, 
+		building: building
 	});
 
 	const xhr = new XMLHttpRequest();
