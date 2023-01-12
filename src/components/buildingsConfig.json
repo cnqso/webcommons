@@ -1,0 +1,18 @@
+{
+"road": {
+    "color": "#463836",
+    "size": 1
+},
+"residential": {
+    "color": "#700000",
+    "size": 3
+},
+"commercial": {
+    "color": "#1100ff",
+    "size": 3
+},
+"coal": {
+    "color": "#ffec41",
+    "size": 5
+}
+}

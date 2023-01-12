@@ -1,21 +1,19 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "./App.css";
-
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getDatabase, ref, set, push } from "firebase/database";
-
-import { useAuthState } from "react-firebase-hooks/auth";
-import { useList, useListVals } from "react-firebase-hooks/database";
-
 import ToggleButtons from "./components/ToggleButtons";
 import Canvas from "./components/Canvas";
 import config from "./components/config";
 import NavBar from "./components/NavBar";
+
+
+
+import { initializeApp } from "firebase/app";
+// import { getAnalytics } from "firebase/analytics";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useList, useListVals } from "react-firebase-hooks/database";
+import { CompareSharp } from "@mui/icons-material";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
@@ -29,25 +27,37 @@ const firebaseConfig = {
 };
 //Initialize fb modules
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const database = getDatabase(app);
 
 
 
 
-
-
-
+function checksumID(x, y, building) {
+	var chk = 0x12345678;
+	let k = 0;
+	let array = [(x).toString(), (y*120).toString(), building, Date.now().toString()];
+	for (let i = 0; i < array.length; i++) {
+		let len = array[i].length;
+		for (let j = 0; j < len; j++) {
+			chk += array[i].charCodeAt(j) * (k + 1);
+			k++;
+		}
+	}
+	const time = Date.now().toString(16);
+	const timedChecksum = time.concat((chk & 0xffffffff).toString(16));
+	return timedChecksum;
+}
 
 function sendRequest(method, y, x, building, handler = "") {
 	const url = "http://localhost:8080/" + handler;
 	const body = JSON.stringify({
-		id: "placeholder",
+		id: checksumID(y, x, building),
 		x: x, //keep
 		y: y, //keep
 		building: building, //keep
-		owner: "xds9lVZJJSXnDyDOB39o4mlKjij1", //authentication
+		owner: auth.currentUser.uid, //authentication
 		power: true,
 		pop: 0,
 		dev: 0,
@@ -60,10 +70,15 @@ function sendRequest(method, y, x, building, handler = "") {
 
 	xhr.addEventListener("readystatechange", function () {
 		if (this.readyState === this.DONE) {
-			console.log(this.responseText);
+			const response = this.responseText;
+			if (response) {
+				//If you get a negative response, do a get request to get the current state of the tilemap
+				console.log(response);
+			}
 		}
 	});
-	auth.currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
+	auth
+	.currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken) {
 		xhr.open(method, url);
 		xhr.setRequestHeader("Authorization", idToken);
 		xhr.setRequestHeader("Content-Type", "application/json");
@@ -73,14 +88,26 @@ function sendRequest(method, y, x, building, handler = "") {
 	  });
 
 }
+//This works well for initial loading of the map
+// let initialBuildings = {};
+// const dbRef = ref(getDatabase());
+// get(child(dbRef, "buildings")).then((snapshot) => {
+//   if (snapshot.exists()) {
+//     console.log(snapshot.val());
+// 	initialBuildings = snapshot.val();
 
-
-
+//   } else {
+//     console.log("No data available");
+//   }
+// }).catch((error) => {
+//   console.error(error);
+// });
 
 
 
 function App() {
 	const [user] = useAuthState(auth);
+	
 
 	const editSelection = useRef("road");
 
@@ -105,7 +132,7 @@ function App() {
 				currentSelection={editSelection}
 				setEditSelection={setEditSelection}
 			/>
-			<Canvas editSelection={editSelection} sendRequest={sendRequest} />
+			<Canvas editSelection={editSelection} sendRequest={sendRequest}/>
 		</div>
 	);
 }
