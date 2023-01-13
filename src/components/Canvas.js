@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import jsonTiles from "../map.json";
-import { FixedSizeGrid as Grid } from "react-window";
 import "./Canvas.css";
 import { Space, Pressable, PressEventCoordinates } from "react-zoomable-ui";
 import config from "./config";
@@ -11,8 +10,6 @@ import { initializeApp } from "firebase/app";
 import {
 	getDatabase,
 	ref,
-	set,
-	push,
 	onValue,
 	get,
 	child,
