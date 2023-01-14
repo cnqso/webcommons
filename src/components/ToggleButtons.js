@@ -12,6 +12,7 @@ function ToggleButtons(props) {
     };
   
     return (
+      <>
       <ToggleButtonGroup
         color="primary"
         value={alignment}
@@ -23,7 +24,10 @@ function ToggleButtons(props) {
         <ToggleButton value="residential">Residential</ToggleButton>
         <ToggleButton value="coal">Power</ToggleButton>
         <ToggleButton value="delete">Bulldoze</ToggleButton>
+        <ToggleButton value="info">?</ToggleButton>
       </ToggleButtonGroup>
+      <span></span>
+      </>
     );
   }
 

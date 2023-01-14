@@ -5,15 +5,11 @@ import { Space, Pressable, PressEventCoordinates } from "react-zoomable-ui";
 import config from "./config";
 import Row from "./Row";
 import buildingsConfig from "./buildingsConfig.json";
+import Tooltip from "@mui/material/Tooltip";
+import Box from "@mui/material/Box";
 
 import { initializeApp } from "firebase/app";
-import {
-	getDatabase,
-	ref,
-	onValue,
-	get,
-	child,
-} from "firebase/database";
+import { getDatabase, ref, onValue, get, child } from "firebase/database";
 import { useList, useListVals } from "react-firebase-hooks/database";
 
 const firebaseConfig = {
@@ -130,7 +126,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 		}
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
-				if (tiles[i][j].color !== "#000000") {
+				if (lastSnapshot.current[tiles[i][j].buildingId]) {
 					console.log("Space already occupied");
 					return false;
 				}
@@ -151,10 +147,12 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	};
 
 	const editMap = (x, y) => {
+		console.log(tiles);
 		//For special buildings, send to unique handlers. Otherwise, create an arbitrary building
-		if (
-			editSelection.current === "delete") {
+		if (editSelection.current === "delete") {
 			deleteBuilding(tiles[y][x].buildingId);
+		} else if (editSelection.current === "info") {
+			console.log(x, y);
 		} else {
 			const buildingColor = buildingsConfig[editSelection.current].color;
 			const buildingSize = buildingsConfig[editSelection.current].size;
@@ -174,15 +172,18 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const deleteBuilding = (buildingID) => {
 		if ("allowed to do this" !== "placeholder" && buildingID) {
 			try {
-			const {x, y, building} = lastSnapshot.current[buildingID];
-			const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingsConfig[building].size);
-			sendRequest("DELETE", y, x, "delete", buildingID);
-			drawBuilding(yMin, yMax, xMin, xMax, "#000000", "");
+				const { x, y, building } = lastSnapshot.current[buildingID];
+				const { xMin, xMax, yMin, yMax } = getBounds(
+					x,
+					y,
+					buildingsConfig[building].size
+				);
+				sendRequest("DELETE", y, x, "delete", buildingID);
+				drawBuilding(yMin, yMax, xMin, xMax, "#000000", "");
 			} catch (error) {
 				console.log(error);
 			}
 		}
-
 	};
 
 	const getBounds = (x, y, size) => {
@@ -249,13 +250,29 @@ const Canvas = ({ editSelection, sendRequest }) => {
 		});
 	}, []);
 
+	const positionRef = React.useRef({
+		x: 0,
+		y: 0,
+	  });
+	  const popperRef = React.useRef(null);
+	  const areaRef = React.useRef(null);
+	
+	  const handleMouseMove = (event) => {
+		positionRef.current = { x: event.clientX, y: event.clientY };
+	
+		if (popperRef.current != null) {
+		  popperRef.current.update();
+		}
+	  };
+	
+	  //Tooltip should live at exactly client 0,0 at all times and on click move to the offset of clickxy.current clientX and clientY
 	return (
 		<div
 			style={{ width: width, height: height / 1.2, position: "relative" }}
 		>
 			<Space
 				onDecideHowToHandlePress={(e, coords) => {
-					clickxy.current = [coords.x, coords.y];
+					clickxy.current = [coords.x, coords.y, coords.clientX, coords.clientY]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
 				}}
 				//onHover={(e, c) => setHover(c)}
 				style={{ border: "solid 1px black" }}
@@ -273,6 +290,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 				}}
 			>
 				<Pressable
+				ref={areaRef}
 					style={{
 						gridTemplateColumns: `repeat(${config.TILE_WIDTH}, 8px)`,
 						gridTemplateRows: `repeat(${config.TILE_HEIGHT}, 8px)`,
@@ -284,9 +302,6 @@ const Canvas = ({ editSelection, sendRequest }) => {
 						handleOnClick(clickxy.current);
 					}}
 				>
-					{/* {tiles.map((row, i) => <>
-            {row.map((tile, j) => <div key={j} style={{background: tile.color}} className="tile"></div>)}
-          </>)} */}
 					{tiles.map((row, i) => (
 						<RowMemo
 							key={i}
@@ -301,24 +316,3 @@ const Canvas = ({ editSelection, sendRequest }) => {
 };
 
 export default Canvas;
-
-// const SimpleTapCountingButton = React.memo(() => {
-//   const [tapCount, setTapCount] = React.useState(0);
-//   const [message, setMessage] = React.useState('TAP ME');
-//   return (
-//     <Pressable
-//       className={'prez'}
-//       potentialTapStyle={{ backgroundColor: 'blue' }}
-//       potentialLongTapStyle={{ backgroundColor: 'darkblue' }}
-//       hoverStyle={{ backgroundColor: 'orchid' }}
-//       onTap={() => {
-//         props.handleOnClick(0,0)
-//       }}
-//       onLongTap={() => {
-//         setMessage('LONG TAPPED!');
-//       }}
-//     >
-//       {message}
-//     </Pressable>
-//   );
-// });

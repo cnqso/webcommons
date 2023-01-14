@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
+import ReactDOM from "react-dom";
 import "./App.css";
 import ToggleButtons from "./components/ToggleButtons";
 import Canvas from "./components/Canvas";
@@ -81,7 +82,6 @@ function sendRequest(method, y, x, building, buildingId, handler = "") {
 // }).catch((error) => {
 //   console.error(error);
 // });
-
 
 
 function App() {
