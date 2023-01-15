@@ -22,6 +22,8 @@ function ToggleButtons(props) {
       >
         <ToggleButton value="road">Road</ToggleButton>
         <ToggleButton value="residential">Residential</ToggleButton>
+        <ToggleButton value="commercial">Commercial </ToggleButton>
+        <ToggleButton value="industrial">Industrial</ToggleButton>
         <ToggleButton value="coal">Power</ToggleButton>
         <ToggleButton value="delete">Bulldoze</ToggleButton>
         <ToggleButton value="info">?</ToggleButton>

@@ -11,8 +11,12 @@
     "color": "#1100ff",
     "size": 3
 },
+"industrial": {
+    "color": "#ffac41",
+    "size": 3
+},
 "coal": {
-    "color": "#ffec41",
+    "color": "#ffacc1",
     "size": 5
 }
 }

@@ -11,6 +11,7 @@ import Box from "@mui/material/Box";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, get, child } from "firebase/database";
 import { useList, useListVals } from "react-firebase-hooks/database";
+import { json } from "react-router-dom";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
@@ -114,6 +115,13 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const [tiles, setTiles] = useState(jsonTiles);
 	const lastSnapshot = useRef({});
 
+	const infoHandler = (x, y) => { 
+		//Todo - make this a tooltip
+		console.log("Handler called at x: " + x + ", y: " + y + " with buildingId: " + tiles[y][x].buildingId);
+		console.log(JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId]));
+	};
+
+
 	const boundsempty = (yMin, yMax, xMin, xMax) => {
 		if (
 			xMin < 0 ||
@@ -147,12 +155,11 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	};
 
 	const editMap = (x, y) => {
-		console.log(tiles);
 		//For special buildings, send to unique handlers. Otherwise, create an arbitrary building
 		if (editSelection.current === "delete") {
 			deleteBuilding(tiles[y][x].buildingId);
 		} else if (editSelection.current === "info") {
-			console.log(x, y);
+			infoHandler(x, y);
 		} else {
 			const buildingColor = buildingsConfig[editSelection.current].color;
 			const buildingSize = buildingsConfig[editSelection.current].size;
@@ -183,6 +190,9 @@ const Canvas = ({ editSelection, sendRequest }) => {
 			} catch (error) {
 				console.log(error);
 			}
+		}
+		else {
+			console.log("There is no building there");
 		}
 	};
 
@@ -230,11 +240,11 @@ const Canvas = ({ editSelection, sendRequest }) => {
 				);
 				//This is like editMap() but doesn't change state until all calculations are done. Faster.
 				//TODO: tempTiles was already a bad enough variable name
-				for (let i = yMin; i <= yMax; i++) {
-					for (let j = xMin; j <= xMax; j++) {
-						tempTiles2[i][j].color =
+				for (let j = yMin; j <= yMax; j++) {
+					for (let k = xMin; k <= xMax; k++) {
+						tempTiles2[j][k].color =
 							buildingsConfig[thisBuilding.building].color; //Turn back all ye who enter the 7th tab of hell
-						tempTiles2[i][j].buildingId = thisBuilding.id;
+						tempTiles2[j][k].buildingId = keys[i];
 						//Splitting imperative code is hard/ugly in react and useEffect has weird scoping problems
 						//You don't know what I've been through trying to get this to run well
 						//12,000 DOM elements is a lot, and react is not built for that
