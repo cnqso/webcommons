@@ -43,7 +43,6 @@ function sendRequest(method, y, x, building, buildingId, handler = "") {
 		y: y, 
 		building: building
 	});
-
 	const xhr = new XMLHttpRequest();
 	xhr.withCredentials = false;
 	// xhr.responseType = "json";
@@ -110,6 +109,7 @@ function App() {
 			<ToggleButtons
 				currentSelection={editSelection}
 				setEditSelection={setEditSelection}
+				sendRequest={sendRequest}
 			/>
 			<Canvas editSelection={editSelection} sendRequest={sendRequest}/>
 		</div>

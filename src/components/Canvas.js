@@ -115,12 +115,22 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const [tiles, setTiles] = useState(jsonTiles);
 	const lastSnapshot = useRef({});
 
-	const infoHandler = (x, y) => { 
+	const infoHandler = (x, y) => {
 		//Todo - make this a tooltip
-		console.log("Handler called at x: " + x + ", y: " + y + " with buildingId: " + tiles[y][x].buildingId);
-		console.log(JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId]));
+		console.log(
+			"Handler called at x: " +
+				x +
+				", y: " +
+				y +
+				"tile key: " +
+				tiles[y][x].key +
+				" with buildingId: " +
+				tiles[y][x].buildingId
+		);
+		console.log(
+			JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId])
+		);
 	};
-
 
 	const boundsempty = (yMin, yMax, xMin, xMax) => {
 		if (
@@ -190,8 +200,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 			} catch (error) {
 				console.log(error);
 			}
-		}
-		else {
+		} else {
 			console.log("There is no building there");
 		}
 	};
@@ -220,69 +229,82 @@ const Canvas = ({ editSelection, sendRequest }) => {
 
 	//Listen to the database for changes and update immediately
 	//Calls once on initial render, but never closes the listener
+	//TODO: Ensure update on deletes, not just adds -- rename lastSnapshot to currentSnapshot
 	useEffect(() => {
 		onValue(buildingsRef, (snapshot) => {
 			const data = snapshot.val();
-			const lastSnapshotLength = Object.keys(lastSnapshot.current).length;
-			lastSnapshot.current = data;
-
+			const oldKeys = Object.keys(lastSnapshot.current);
 			const keys = Object.keys(data);
+			const lastSnapshotLength = oldKeys.length;
+
 			let tempTiles2 = tiles;
 
-			//Check the previous snapshot length and render all objects after that
-			//Building IDs are chronological by time for this purpose, best of both worlds of arrays and objects
-			for (let i = lastSnapshotLength; i < keys.length; i++) {
-				let thisBuilding = data[keys[i]];
-				let { xMin, xMax, yMin, yMax } = getBounds(
-					thisBuilding.x,
-					thisBuilding.y,
-					buildingsConfig[thisBuilding.building].size
-				);
-				//This is like editMap() but doesn't change state until all calculations are done. Faster.
-				//TODO: tempTiles was already a bad enough variable name
-				for (let j = yMin; j <= yMax; j++) {
-					for (let k = xMin; k <= xMax; k++) {
-						tempTiles2[j][k].color =
-							buildingsConfig[thisBuilding.building].color; //Turn back all ye who enter the 7th tab of hell
-						tempTiles2[j][k].buildingId = keys[i];
-						//Splitting imperative code is hard/ugly in react and useEffect has weird scoping problems
-						//You don't know what I've been through trying to get this to run well
-						//12,000 DOM elements is a lot, and react is not built for that
-						//Those motherfuckers on stack overflow said it was impossible
-						//I had to implement a checksum to hack around react's shitty diffing. TWICE.
-						//Look at me now, 100 memos, 12,000 DOM elements, and a 5ms render time
-						//Thanks for reading
+			if (keys.length < lastSnapshotLength) {
+				//search for deleted buildings
+				console.log("Something was deleted");
+				for (let i = 0; i < lastSnapshotLength; i++) {
+					if (!data[oldKeys[i]]) {
+						const { x, y, building } =
+							lastSnapshot.current[oldKeys[i]];
+						const { xMin, xMax, yMin, yMax } = getBounds(
+							x,
+							y,
+							buildingsConfig[building].size
+						);
+						drawBuilding(yMin, yMax, xMin, xMax, "#000000", "");
 					}
 				}
+			} else {
+				//Check the previous snapshot length and render all objects after that
+				//Building IDs are chronological by time for this purpose, best of both worlds of arrays and objects
+				for (let i = lastSnapshotLength; i < keys.length; i++) {
+					let thisBuilding = data[keys[i]];
+					let { xMin, xMax, yMin, yMax } = getBounds(
+						thisBuilding.x,
+						thisBuilding.y,
+						buildingsConfig[thisBuilding.building].size
+					);
+					//This is like editMap() but doesn't change state until all calculations are done. Faster.
+					//TODO: tempTiles was already a bad enough variable name
+					for (let j = yMin; j <= yMax; j++) {
+						for (let k = xMin; k <= xMax; k++) {
+							tempTiles2[j][k].color =
+								buildingsConfig[thisBuilding.building].color; //Turn back all ye who enter the 7th tab of hell
+							tempTiles2[j][k].buildingId = keys[i];
+							//Splitting imperative code is hard/ugly in react and useEffect has weird scoping problems
+							//You don't know what I've been through trying to get this to run well
+							//12,000 DOM elements is a lot, and react is not built for that
+							//Those motherfuckers on stack overflow said it was impossible
+							//I had to implement a checksum to hack around react's shitty diffing. TWICE.
+							//Look at me now, 100 memos, 12,000 DOM elements, and a 5ms render time
+							//Thanks for reading
+						}
+					}
+				}
+
+				setTiles([...tempTiles2]);
 			}
-			setTiles([...tempTiles2]);
+			lastSnapshot.current = data;
 			//Save the length of the snapshot so that we only render the
 		});
 	}, []);
 
-	const positionRef = React.useRef({
-		x: 0,
-		y: 0,
-	  });
-	  const popperRef = React.useRef(null);
-	  const areaRef = React.useRef(null);
-	
-	  const handleMouseMove = (event) => {
-		positionRef.current = { x: event.clientX, y: event.clientY };
-	
-		if (popperRef.current != null) {
-		  popperRef.current.update();
-		}
-	  };
-	
-	  //Tooltip should live at exactly client 0,0 at all times and on click move to the offset of clickxy.current clientX and clientY
+	//Tooltip should live at exactly client 0,0 at all times and on click move to the offset of clickxy.current clientX and clientY
 	return (
 		<div
-			style={{ width: width, height: height / 1.2, position: "relative" }}
-		>
+			style={{
+				width: width,
+				height: height / 1.2,
+				position: "relative",
+			}}>
 			<Space
 				onDecideHowToHandlePress={(e, coords) => {
-					clickxy.current = [coords.x, coords.y, coords.clientX, coords.clientY]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
+					clickxy.current = [
+						coords.x,
+						coords.y,
+						coords.clientX,
+						coords.clientY,
+					]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
 				}}
 				//onHover={(e, c) => setHover(c)}
 				style={{ border: "solid 1px black" }}
@@ -297,10 +319,8 @@ const Canvas = ({ editSelection, sendRequest }) => {
 						width: mapWidth,
 						height: mapHeight,
 					});
-				}}
-			>
+				}}>
 				<Pressable
-				ref={areaRef}
 					style={{
 						gridTemplateColumns: `repeat(${config.TILE_WIDTH}, 8px)`,
 						gridTemplateRows: `repeat(${config.TILE_HEIGHT}, 8px)`,
@@ -310,8 +330,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					className={"Grid"}
 					onTap={() => {
 						handleOnClick(clickxy.current);
-					}}
-				>
+					}}>
 					{tiles.map((row, i) => (
 						<RowMemo
 							key={i}

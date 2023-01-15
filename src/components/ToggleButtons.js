@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
+
+
+
 function ToggleButtons(props) {
 
     const [alignment, setAlignment] = useState('road');
@@ -10,7 +13,13 @@ function ToggleButtons(props) {
       setAlignment(newAlignment);
       props.setEditSelection(newAlignment);
     };
-  
+
+
+    function sendTickRequest() {
+      props.sendRequest("POST", 0, 0, "tick", 0, "tick");
+    }
+
+
     return (
       <>
       <ToggleButtonGroup
@@ -28,7 +37,7 @@ function ToggleButtons(props) {
         <ToggleButton value="delete">Bulldoze</ToggleButton>
         <ToggleButton value="info">?</ToggleButton>
       </ToggleButtonGroup>
-      <span></span>
+      <span><button onClick={sendTickRequest}>Simulate one tick</button></span>
       </>
     );
   }
