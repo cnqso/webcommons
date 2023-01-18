@@ -1,22 +1,33 @@
 {
 "road": {
     "color": "#463836",
-    "size": 1
+    "size": 1,
+    "sprite": 67,
+    "jsoncommentbadpractice" : "Roads go from 64 to 239"
 },
 "residential": {
     "color": "#700000",
-    "size": 3
+    "size": 3,
+    "sprite": 259
 },
 "commercial": {
     "color": "#1100ff",
-    "size": 3
+    "size": 3,
+    "sprite": 367
 },
 "industrial": {
     "color": "#ffac41",
-    "size": 3
+    "size": 3,
+    "sprite": 3
 },
 "coal": {
     "color": "#ffacc1",
-    "size": 5
+    "size": 5,
+    "sprite": 4
+},
+"empty": {
+    "color": "#000000",
+    "size": 1,
+    "sprite": 40
 }
 }

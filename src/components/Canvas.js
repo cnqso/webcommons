@@ -67,9 +67,9 @@ function checksum(array) {
 	var chk = 0x12345678;
 	let x = 0;
 	for (let i = 0; i < array.length; i++) {
-		let len = array[i].color.length;
+		let len = array[i].type.length;
 		for (let j = 0; j < len; j++) {
-			chk += array[i].color.charCodeAt(j) * (x + 1);
+			chk += array[i].type.charCodeAt(j) * (x + 1);
 			x++;
 		}
 	}
@@ -80,25 +80,10 @@ function checksum(array) {
 //Returns a short string, functionally the time in hex plus a checksum of the x, y, and building
 //TODO: Keep x and y as ints, current implementation doesn't guarantee uniqueness
 //Maybe add firebase user ID
-function checksumID(x, y, building) {
-	var chk = 0x12345678;
-	let k = 0;
-	let array = [
-		x.toString(),
-		(y * 120).toString(),
-		building,
-		Date.now().toString(),
-	];
-	for (let i = 0; i < array.length; i++) {
-		let len = array[i].length;
-		for (let j = 0; j < len; j++) {
-			chk += array[i].charCodeAt(j) * (k + 1);
-			k++;
-		}
-	}
-	const time = Date.now().toString(16);
-	const timedChecksum = time.concat((chk & 0xffffffff).toString(16));
-	return timedChecksum;
+function newID(x, y) {
+		const time = (Date.now() -	1672549200000).toString(32);
+		const newId = time.concat((x+(y*120)).toString(32));
+		return newId;
 }
 
 //Very simple but extremely vital
@@ -110,25 +95,15 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const { width, height } = useWindowSize();
 	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
-
+	
 	const clickxy = useRef([0, 0]);
 	const [tiles, setTiles] = useState(jsonTiles);
 	const lastSnapshot = useRef({});
 
 	const infoHandler = (x, y) => {
 		//Todo - make this a tooltip
-		console.log(
-			"Handler called at x: " +
-				x +
-				", y: " +
-				y +
-				"tile key: " +
-				tiles[y][x].key +
-				" with buildingId: " +
-				tiles[y][x].buildingId
-		);
-		console.log(
-			JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId])
+		console.log("Building data: \n" +
+				tiles[y][x].buildingId + ": "  + JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId], null, 2)
 		);
 	};
 
@@ -153,11 +128,11 @@ const Canvas = ({ editSelection, sendRequest }) => {
 		return true;
 	};
 
-	const drawBuilding = (yMin, yMax, xMin, xMax, color, id) => {
+	const drawBuilding = (yMin, yMax, xMin, xMax, type, id) => {
 		let tempTiles = tiles;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
-				tempTiles[i][j].color = color;
+				tempTiles[i][j].type = type;
 				tempTiles[i][j].buildingId = id;
 			}
 		}
@@ -171,16 +146,15 @@ const Canvas = ({ editSelection, sendRequest }) => {
 		} else if (editSelection.current === "info") {
 			infoHandler(x, y);
 		} else {
-			const buildingColor = buildingsConfig[editSelection.current].color;
 			const buildingSize = buildingsConfig[editSelection.current].size;
 
 			const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingSize);
 			//console.log(xMin, xMax, yMin, yMax);
 			//TODO check delete first
 			if (boundsempty(yMin, yMax, xMin, xMax) === true) {
-				const newId = checksumID(x, y, editSelection.current);
+				const newId = newID(x, y);
 				sendRequest("POST", y, x, editSelection.current, newId);
-				drawBuilding(yMin, yMax, xMin, xMax, buildingColor, newId);
+				drawBuilding(yMin, yMax, xMin, xMax, editSelection.current, newId);
 				//TODO if the post request fails, the tilemap will be reverted to the previous state
 			}
 		}
@@ -196,7 +170,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					buildingsConfig[building].size
 				);
 				sendRequest("DELETE", y, x, "delete", buildingID);
-				drawBuilding(yMin, yMax, xMin, xMax, "#000000", "");
+				drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
 			} catch (error) {
 				console.log(error);
 			}
@@ -214,7 +188,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	};
 
 	const handleOnClick = (coordinates) => {
-		//console.log(coordinates)
+		console.log(coordinates)
 		const adjustedX = Math.floor(
 			(coordinates[0] + config.X_ERROR) / config.TILE_PIXELS
 		);
@@ -251,7 +225,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 							y,
 							buildingsConfig[building].size
 						);
-						drawBuilding(yMin, yMax, xMin, xMax, "#000000", "");
+						drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
 					}
 				}
 			} else {
@@ -268,8 +242,8 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					//TODO: tempTiles was already a bad enough variable name
 					for (let j = yMin; j <= yMax; j++) {
 						for (let k = xMin; k <= xMax; k++) {
-							tempTiles2[j][k].color =
-								buildingsConfig[thisBuilding.building].color; //Turn back all ye who enter the 7th tab of hell
+							tempTiles2[j][k].type =
+								thisBuilding.building; //Turn back all ye who enter the 7th tab of hell
 							tempTiles2[j][k].buildingId = keys[i];
 							//Splitting imperative code is hard/ugly in react and useEffect has weird scoping problems
 							//You don't know what I've been through trying to get this to run well
@@ -292,9 +266,10 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	//Tooltip should live at exactly client 0,0 at all times and on click move to the offset of clickxy.current clientX and clientY
 	return (
 		<div
+			className="Canvas"
 			style={{
 				width: width,
-				height: height / 1.2,
+				height: height / 1.1,
 				position: "relative",
 			}}>
 			<Space
@@ -310,34 +285,25 @@ const Canvas = ({ editSelection, sendRequest }) => {
 				style={{ border: "solid 1px black" }}
 				onCreate={(viewPort) => {
 					viewPort.setBounds({
-						x: [0, mapWidth],
-						y: [0, mapHeight],
+						x: [mapWidth*-1, mapWidth*2],
+						y: [mapHeight*-1, mapHeight*2],
 					});
 					viewPort.camera.centerFitAreaIntoView({
-						left: 0,
-						top: 0,
-						width: mapWidth,
-						height: mapHeight,
+						left: mapWidth/10,
+						top: mapHeight/10,
+						width: 1000,
+						height: 1000,
 					});
 				}}>
 				<Pressable
-					style={{
-						gridTemplateColumns: `repeat(${config.TILE_WIDTH}, 8px)`,
-						gridTemplateRows: `repeat(${config.TILE_HEIGHT}, 8px)`,
-						width: `${mapWidth}`,
-						height: `${mapHeight}`,
-					}}
-					className={"Grid"}
+					style={{ width: `${mapWidth}`, height: `${mapHeight}`}}
 					onTap={() => {
 						handleOnClick(clickxy.current);
 					}}>
-					{tiles.map((row, i) => (
 						<RowMemo
-							key={i}
-							rowChecksum={checksum(row)}
-							row={row}
+							rowChecksum={checksum(tiles[0])}
+							tiles={tiles}
 						/>
-					))}
 				</Pressable>
 			</Space>
 		</div>

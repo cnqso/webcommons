@@ -6,10 +6,11 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import "./NavBar.css";
 
 export default function NavBar({ signIn, signOut, user }) {
 	return (
-		<Box sx={{ flexGrow: 1 }}>
+		<Box className="NavBar" sx={{ flexGrow: 1 }}>
 			<AppBar position="static" style={{ background: "black" }}>
 				<Toolbar>
 					<IconButton

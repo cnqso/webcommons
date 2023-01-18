@@ -9,11 +9,30 @@
   row-gap:0;
   padding: 0;
 }
-
-.tile {
-  width: 9px;
-  height: 9px;
-  display: grid;
-  place-content: center;
+.Canvas {
+  background-color: #121212;
 }
 
+.road {
+  background-color: #463836;
+}
+
+.residential {
+  background-color: #700000;
+}
+
+.commercial {
+  background-color: #1100ff;
+}
+
+.industrial {
+  background-color: #ffac41;
+}
+
+.coal {
+  background-color: #ffacc1;
+}
+
+.empty {
+  background-color: #000000;
+}
