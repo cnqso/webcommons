@@ -2,21 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import './Canvas.css';
 import config from './config';
 import buildingsConfig from './buildingsConfig.json';
-import spritemap from './tiles2.png'
+import spritemap from './tileset.png'
 
-
-var xAxis = {
-  x : 1,
-  y : 0.5,
-}
-var yAxis = {
-  x : -1,
-  y : 0.5,
-}
-var origin = {
-  x : 0,
-  y : 0,
-}
 
 function Row({tiles}) {
   const image = new Image();
@@ -32,13 +19,15 @@ function Row({tiles}) {
   useEffect(() => {
     const kanvas = canvas.current;
     const ctx = kanvas.getContext('2d');
-    ctx.fillStyle = "#1b1b22";
+    ctx.fillStyle = "#59c135";
     ctx.fillRect(0, 0, mapWidth, mapHeight);
     for (let y = 0 ; y < tiles.length ; y++) {
       for (let x = 0 ; x < tiles[0].length; x++) {
         if (tiles[y][x].type === "empty") {
           ctx.fillStyle="#1b1b22";
           ctx.fillRect(x*square, y*square, square, square);
+          // const treeRandom = Math.floor(Math.random() * 5);
+          ctx.drawImage(image, tiles[y][x].spriteIndex*64, 0, 64, 64, x*square, y*square, square, square);
           continue;
         }
         if (tiles[y][x].type === "road") {

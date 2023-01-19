@@ -131,7 +131,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const drawBuilding = (yMin, yMax, xMin, xMax, type, id) => {
 		let tempTiles = tiles;
 		let k = 0;
-		let randomTileOffset = 4 * 9//Math.floor(Math.random() * 4);
+		let randomTileOffset = ((xMin+yMax) % 8)*9;
         if (type === "residential") { randomTileOffset += 3; }
 		const spriteOffset = (buildingsConfig[type].sprite.y*16+buildingsConfig[type].sprite.x) + randomTileOffset;
 		for (let i = yMin; i <= yMax; i++) {
@@ -246,8 +246,8 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					//This is like editMap() but doesn't change state until all calculations are done. Faster.
 					//TODO: tempTiles was already a bad enough variable name
 					let l = 0;
-					let randomTileOffset = Math.floor(Math.random() * 8) * 9;
-       				if (thisBuilding.building === "residential") { randomTileOffset += 3; }
+					let randomTileOffset = ((xMin+yMax) % 8) * 9;
+       				if (thisBuilding.building === "residential" && randomTileOffset > 0) { randomTileOffset += 3; }
 					const spriteOffset = buildingsConfig[thisBuilding.building].sprite.y*16+buildingsConfig[thisBuilding.building].sprite.x + randomTileOffset;
 					for (let j = yMin; j <= yMax; j++) {
 						for (let k = xMin; k <= xMax; k++) {
