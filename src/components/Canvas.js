@@ -103,7 +103,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const infoHandler = (x, y) => {
 		//Todo - make this a tooltip
 		console.log("Building data: \n" +
-				tiles[y][x].buildingId + ": "  + JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId], null, 2)
+				tiles[y][x].buildingId + ": "  + JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId], null, 2) + "\n Tile data: \n" + JSON.stringify(tiles[y][x], null, 2)
 		);
 	};
 
@@ -129,11 +129,15 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	};
 
 	const drawBuilding = (yMin, yMax, xMin, xMax, type, id) => {
+		const size = (yMax - yMin + 1)
 		let tempTiles = tiles;
+		let k = 0;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				tempTiles[i][j].type = type;
 				tempTiles[i][j].buildingId = id;
+				tempTiles[i][j].spriteIndex = (buildingsConfig[type].sprite.y*32) + k;
+				k++;
 			}
 		}
 		setTiles([...tempTiles]);
@@ -188,7 +192,6 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	};
 
 	const handleOnClick = (coordinates) => {
-		console.log(coordinates)
 		const adjustedX = Math.floor(
 			(coordinates[0] + config.X_ERROR) / config.TILE_PIXELS
 		);
@@ -240,11 +243,15 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					);
 					//This is like editMap() but doesn't change state until all calculations are done. Faster.
 					//TODO: tempTiles was already a bad enough variable name
+					let l = 0;
+					const spriteOffset = buildingsConfig[thisBuilding.building].sprite.y*32;
 					for (let j = yMin; j <= yMax; j++) {
 						for (let k = xMin; k <= xMax; k++) {
 							tempTiles2[j][k].type =
 								thisBuilding.building; //Turn back all ye who enter the 7th tab of hell
 							tempTiles2[j][k].buildingId = keys[i];
+							tempTiles2[j][k].spriteIndex = spriteOffset + l;
+							l++;
 							//Splitting imperative code is hard/ugly in react and useEffect has weird scoping problems
 							//You don't know what I've been through trying to get this to run well
 							//12,000 DOM elements is a lot, and react is not built for that
