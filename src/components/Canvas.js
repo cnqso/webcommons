@@ -103,7 +103,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const infoHandler = (x, y) => {
 		//Todo - make this a tooltip
 		console.log("Building data: \n" +
-				tiles[y][x].buildingId + ": "  + JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId], null, 2) + "\n Tile data: \n" + JSON.stringify(tiles[y][x], null, 2)
+				tiles[y][x].buildingId + ": "  + JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId], null, 2) + " Tile data: " + JSON.stringify(tiles[y][x], null, 2)
 		);
 	};
 
@@ -129,14 +129,16 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	};
 
 	const drawBuilding = (yMin, yMax, xMin, xMax, type, id) => {
-		const size = (yMax - yMin + 1)
 		let tempTiles = tiles;
 		let k = 0;
+		let randomTileOffset = 4 * 9//Math.floor(Math.random() * 4);
+        if (type === "residential") { randomTileOffset += 3; }
+		const spriteOffset = (buildingsConfig[type].sprite.y*16+buildingsConfig[type].sprite.x) + randomTileOffset;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				tempTiles[i][j].type = type;
 				tempTiles[i][j].buildingId = id;
-				tempTiles[i][j].spriteIndex = (buildingsConfig[type].sprite.y*32) + k;
+				tempTiles[i][j].spriteIndex = spriteOffset + k;
 				k++;
 			}
 		}
@@ -244,7 +246,9 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					//This is like editMap() but doesn't change state until all calculations are done. Faster.
 					//TODO: tempTiles was already a bad enough variable name
 					let l = 0;
-					const spriteOffset = buildingsConfig[thisBuilding.building].sprite.y*32;
+					let randomTileOffset = Math.floor(Math.random() * 8) * 9;
+       				if (thisBuilding.building === "residential") { randomTileOffset += 3; }
+					const spriteOffset = buildingsConfig[thisBuilding.building].sprite.y*16+buildingsConfig[thisBuilding.building].sprite.x + randomTileOffset;
 					for (let j = yMin; j <= yMax; j++) {
 						for (let k = xMin; k <= xMax; k++) {
 							tempTiles2[j][k].type =

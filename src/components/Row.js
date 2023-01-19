@@ -2,10 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import './Canvas.css';
 import config from './config';
 import buildingsConfig from './buildingsConfig.json';
-import spritemap from './tiles.bmp'
+import spritemap from './tiles2.png'
 
 
-
+var xAxis = {
+  x : 1,
+  y : 0.5,
+}
+var yAxis = {
+  x : -1,
+  y : 0.5,
+}
+var origin = {
+  x : 0,
+  y : 0,
+}
 
 function Row({tiles}) {
   const image = new Image();
@@ -32,8 +43,6 @@ function Row({tiles}) {
         }
         if (tiles[y][x].type === "road") {
 
-          let directionSprite = null
-
           //Measure horiz and vert road section. Then set sprite accordingly (1h+1v is a turn, 1h2v and 2h1v are t-junctions, 2h2v is a crossroads)
           //Then we just rotate accordingly
           let left = false;
@@ -49,13 +58,13 @@ function Row({tiles}) {
           const result = left + right*2 + up*4 + down*8; //There is probably a faster boolean-to-binary conversion
 
 
-          ctx.drawImage(image, result*64, 64, 64, 64, x*square, y*square, square, square);
+          ctx.drawImage(image, result*64, buildingsConfig["road"].sprite.y*64, 64, 64, x*square, y*square, square, square);
           continue;
         }
 
-        const tile = tiles[y][x].spriteIndex
-        const tileRandom = Math.floor(Math.random() * 4);
-        ctx.drawImage(image, (tile%32)*64, (Math.floor(tile/32))*64, 64, 64, x*square, y*square, square, square);
+        const tile = tiles[y][x].spriteIndex;
+        
+        ctx.drawImage(image, (tile%16)*64, (Math.floor(tile/16))*64, 64, 64, x*square, y*square, square, square);
       }
     }
     console.log("Rendered")
