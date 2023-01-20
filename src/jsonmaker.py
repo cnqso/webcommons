@@ -29,7 +29,7 @@ for i in range(height):
         tile['type'] = "empty"
         tile['buildingId'] = 0
         if pic[i][j] > random.random():
-            tile['spriteIndex'] = random.randint(2,4)
+            tile['spriteIndex'] = random.randint(12,15)
         else:
             tile['spriteIndex'] = 0
         row.append(tile)

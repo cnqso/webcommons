@@ -81,9 +81,9 @@ function checksum(array) {
 //TODO: Keep x and y as ints, current implementation doesn't guarantee uniqueness
 //Maybe add firebase user ID
 function newID(x, y) {
-		const time = (Date.now() -	1672549200000).toString(32);
-		const newId = time.concat((x+(y*120)).toString(32));
-		return newId;
+	const time = (Date.now() - 1672549200000).toString(32);
+	const newId = time.concat((x + y * 120).toString(32));
+	return newId;
 }
 
 //Very simple but extremely vital
@@ -95,15 +95,24 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	const { width, height } = useWindowSize();
 	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
-	
+
 	const clickxy = useRef([0, 0]);
 	const [tiles, setTiles] = useState(jsonTiles);
 	const lastSnapshot = useRef({});
 
 	const infoHandler = (x, y) => {
 		//Todo - make this a tooltip
-		console.log("Building data: \n" +
-				tiles[y][x].buildingId + ": "  + JSON.stringify(lastSnapshot.current[tiles[y][x].buildingId], null, 2) + " Tile data: " + JSON.stringify(tiles[y][x], null, 2)
+		console.log(
+			"Building data: \n" +
+				tiles[y][x].buildingId +
+				": " +
+				JSON.stringify(
+					lastSnapshot.current[tiles[y][x].buildingId],
+					null,
+					2
+				) +
+				" Tile data: " +
+				JSON.stringify(tiles[y][x], null, 2)
 		);
 	};
 
@@ -128,12 +137,20 @@ const Canvas = ({ editSelection, sendRequest }) => {
 		return true;
 	};
 
-	const drawBuilding = (yMin, yMax, xMin, xMax, type, id) => {
+	//Update the tilemap according to building type.
+	//The tilemap takes in the building type, the ID of its associated building, and the index of its sprite in the sprite sheet
+	//For some buildings, we also need to take additional info like development level or traffic
+	const drawBuilding = (yMin, yMax, xMin, xMax, type, id, level = 0) => {
 		let tempTiles = tiles;
 		let k = 0;
-		let randomTileOffset = ((xMin+yMax) % 8)*9;
-        if (type === "residential") { randomTileOffset += 3; }
-		const spriteOffset = (buildingsConfig[type].sprite.y*16+buildingsConfig[type].sprite.x) + randomTileOffset;
+
+		//Determine the offset based on building levels
+		const developmentOffset = level*9
+	
+		const spriteOffset =
+			buildingsConfig[type].sprite.y * 16 +
+			buildingsConfig[type].sprite.x +
+			developmentOffset;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				tempTiles[i][j].type = type;
@@ -160,7 +177,14 @@ const Canvas = ({ editSelection, sendRequest }) => {
 			if (boundsempty(yMin, yMax, xMin, xMax) === true) {
 				const newId = newID(x, y);
 				sendRequest("POST", y, x, editSelection.current, newId);
-				drawBuilding(yMin, yMax, xMin, xMax, editSelection.current, newId);
+				drawBuilding(
+					yMin,
+					yMax,
+					xMin,
+					xMax,
+					editSelection.current,
+					newId
+				);
 				//TODO if the post request fails, the tilemap will be reverted to the previous state
 			}
 		}
@@ -217,6 +241,8 @@ const Canvas = ({ editSelection, sendRequest }) => {
 			const lastSnapshotLength = oldKeys.length;
 
 			let tempTiles2 = tiles;
+			let newBuildingLevels = [];
+
 
 			if (keys.length < lastSnapshotLength) {
 				//search for deleted buildings
@@ -246,13 +272,15 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					//This is like editMap() but doesn't change state until all calculations are done. Faster.
 					//TODO: tempTiles was already a bad enough variable name
 					let l = 0;
-					let randomTileOffset = ((xMin+yMax) % 8) * 9;
-       				if (thisBuilding.building === "residential" && randomTileOffset > 0) { randomTileOffset += 3; }
-					const spriteOffset = buildingsConfig[thisBuilding.building].sprite.y*16+buildingsConfig[thisBuilding.building].sprite.x + randomTileOffset;
+					let developmentOffset = thisBuilding.level*9;
+
+					const spriteOffset =
+						buildingsConfig[thisBuilding.building].sprite.y * 16 +
+						buildingsConfig[thisBuilding.building].sprite.x +
+						developmentOffset;
 					for (let j = yMin; j <= yMax; j++) {
 						for (let k = xMin; k <= xMax; k++) {
-							tempTiles2[j][k].type =
-								thisBuilding.building; //Turn back all ye who enter the 7th tab of hell
+							tempTiles2[j][k].type = thisBuilding.building; //Turn back all ye who enter the 7th tab of hell
 							tempTiles2[j][k].buildingId = keys[i];
 							tempTiles2[j][k].spriteIndex = spriteOffset + l;
 							l++;
@@ -269,6 +297,23 @@ const Canvas = ({ editSelection, sendRequest }) => {
 
 				setTiles([...tempTiles2]);
 			}
+
+
+			//Lastly, check for important changes to buildings
+			for(let i = 0; i < keys.length; i++){
+				if(lastSnapshot.current[keys[i]] === undefined) continue;
+				if(data[keys[i]].level !== lastSnapshot.current[keys[i]].level){
+					console.log("Level changed");
+					let thisBuilding = data[keys[i]];
+					let { xMin, xMax, yMin, yMax } = getBounds(
+						thisBuilding.x,
+						thisBuilding.y,
+						buildingsConfig[thisBuilding.building].size
+					);
+					drawBuilding(yMin, yMax, xMin, xMax, thisBuilding.building, keys[i], thisBuilding.level);
+			
+				}
+			}
 			lastSnapshot.current = data;
 			//Save the length of the snapshot so that we only render the
 		});
@@ -277,7 +322,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 	//Tooltip should live at exactly client 0,0 at all times and on click move to the offset of clickxy.current clientX and clientY
 	return (
 		<div
-			className="Canvas"
+			className='Canvas'
 			style={{
 				width: width,
 				height: height / 1.1,
@@ -296,25 +341,22 @@ const Canvas = ({ editSelection, sendRequest }) => {
 				style={{ border: "solid 1px black" }}
 				onCreate={(viewPort) => {
 					viewPort.setBounds({
-						x: [mapWidth*-1, mapWidth*2],
-						y: [mapHeight*-1, mapHeight*2],
+						x: [mapWidth * -1, mapWidth * 2],
+						y: [mapHeight * -1, mapHeight * 2],
 					});
 					viewPort.camera.centerFitAreaIntoView({
-						left: mapWidth/10,
-						top: mapHeight/10,
+						left: mapWidth / 10,
+						top: mapHeight / 10,
 						width: 1000,
 						height: 1000,
 					});
 				}}>
 				<Pressable
-					style={{ width: `${mapWidth}`, height: `${mapHeight}`}}
+					style={{ width: `${mapWidth}`, height: `${mapHeight}` }}
 					onTap={() => {
 						handleOnClick(clickxy.current);
 					}}>
-						<RowMemo
-							rowChecksum={checksum(tiles[0])}
-							tiles={tiles}
-						/>
+					<RowMemo rowChecksum={checksum(tiles[0])} tiles={tiles} />
 				</Pressable>
 			</Space>
 		</div>
