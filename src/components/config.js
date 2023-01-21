@@ -24,6 +24,15 @@ const config = {
 
     //Commercial buildings have 5 visible levels determined by the value of employmentCapacity
     "commercial": [15, 30, 60, 100]
+    },
+
+
+    MAP_STYLES: {
+        city: {color: "#1b1b22", heatMapIndex: -1},
+        resDemand: {color:"#700000", heatMapIndex: 0},
+        indDemand: {color:"#ffac41", heatMapIndex: 1},
+        comDemand: {color: "#1100ff", heatMapIndex: 2},
+        landValue: {color: "#59c135", heatMapIndex: 3},
     }
 }
 

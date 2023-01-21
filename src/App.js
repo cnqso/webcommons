@@ -88,6 +88,8 @@ function App() {
 	
 
 	const editSelection = useRef("road");
+	const [mapSelection, setMapSelection] = useState("city");
+	// const [mapSelection, setMapSelection] = useState("city");
 
 	const setEditSelection = (value) => {
 		editSelection.current = value;
@@ -102,16 +104,17 @@ function App() {
 	const signOut = () => {
 		auth.signOut();
 	}
-	
 	return (
 		<div className="App">
 			<NavBar signIn={signInWithGoogle} signOut={signOut} user={user}/>
 			<ToggleButtons
 				currentSelection={editSelection}
 				setEditSelection={setEditSelection}
+				mapSelection={mapSelection}
+				setMapSelection={setMapSelection}
 				sendRequest={sendRequest}
 			/>
-			<Canvas editSelection={editSelection} sendRequest={sendRequest}/>
+			<Canvas editSelection={editSelection} mapSelection={mapSelection} sendRequest={sendRequest}/>
 		</div>
 	);
 }

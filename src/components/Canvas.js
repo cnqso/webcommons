@@ -91,7 +91,7 @@ function newID(x, y) {
 //I could imagine a scenario where memoizing each tile works better.
 const RowMemo = React.memo(Row);
 
-const Canvas = ({ editSelection, sendRequest }) => {
+const Canvas = ({ editSelection, mapSelection, sendRequest }) => {
 	const { width, height } = useWindowSize();
 	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
@@ -241,8 +241,6 @@ const Canvas = ({ editSelection, sendRequest }) => {
 			const lastSnapshotLength = oldKeys.length;
 
 			let tempTiles2 = tiles;
-			let newBuildingLevels = [];
-
 
 			if (keys.length < lastSnapshotLength) {
 				//search for deleted buildings
@@ -325,7 +323,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 			className='Canvas'
 			style={{
 				width: width,
-				height: height / 1.1,
+				height: height / 1.15,
 				position: "relative",
 			}}>
 			<Space
@@ -356,7 +354,7 @@ const Canvas = ({ editSelection, sendRequest }) => {
 					onTap={() => {
 						handleOnClick(clickxy.current);
 					}}>
-					<RowMemo rowChecksum={checksum(tiles[0])} tiles={tiles} />
+					<Row rowChecksum={checksum(tiles[0])} tiles={tiles} mapSelection={mapSelection} lastSnapshot={lastSnapshot}/>
 				</Pressable>
 			</Space>
 		</div>
