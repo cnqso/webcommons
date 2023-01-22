@@ -19,26 +19,31 @@ function normalMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 			let tile = 0;
 			//If we are using an alternative mapmode, we don't render buildings as sprites, but as colored rectangles
 			if (mapSelection !== "city" && tiles[y][x].type !== "empty") {
+				const mapStyle = mapStyles[mapSelection];
 				if (tiles[y][x].type !== "road") {
 					ctx.globalAlpha = 1;
 					ctx.fillStyle = buildingsConfig[tiles[y][x].type].color;
 					ctx.fillRect(drawX, drawY, tilePx, tilePx);
 					continue;
 				}
-				const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
-				const heatTile = heatMap[mapStyles[mapSelection].heatMapIndex];
+				let heatTile;
+				try {
+					const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
+					heatTile = heatMap[mapStyle.heatMapIndex];
+				} catch (e) {
+					heatTile = 0; //Before the database updates, render a cold tile
+				}
 				ctx.globalAlpha = 1;
 				ctx.fillStyle = "#FFFFFF";
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
-				ctx.globalAlpha = (heatTile+2)/3;
-				ctx.fillStyle = mapStyles[mapSelection].color;
+				ctx.globalAlpha = (heatTile);
+				ctx.fillStyle = mapStyle.color;
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
 				continue;
 			}
-			
-			
+
 			if (tiles[y][x].type === "road") {
-				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15. 
+				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
 				tile += x > 0 && tiles[y][x - 1].type === "road";
 				tile += 2 * (x < tiles[0].length - 1 && tiles[y][x + 1].type === "road");
@@ -62,7 +67,6 @@ function Row({ tiles, mapSelection, lastSnapshot }) {
 	//The spritemap is 32 by 32, each sprite is 64 pixels wide and tall
 
 	const canvas = useRef(null);
-
 
 	useEffect(() => {
 		tileset.onload = () => {
