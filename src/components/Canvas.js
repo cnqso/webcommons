@@ -10,8 +10,6 @@ import Box from "@mui/material/Box";
 
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, get, child } from "firebase/database";
-import { useList, useListVals } from "react-firebase-hooks/database";
-import { json } from "react-router-dom";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
