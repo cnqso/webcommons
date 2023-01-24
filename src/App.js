@@ -40,7 +40,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 const userListRef = ref(database, "userList");
-const userDataRef = ref(database, "userData");
+const userLocationsRef = ref(database, "userLocations");
 
 function sendRequest(method, y, x, building, buildingId, handler = "") {
 	const url = "http://localhost:8080/" + handler;
@@ -108,21 +108,23 @@ function cnqsoFastSquareSpiral(n) {
 }
 
 
-
 function App() {
 	const [user] = useAuthState(auth);
 
 	const editSelection = useRef("road");
 	const [mapSelection, setMapSelection] = useState("city");
-	const [userNameTaken, setUserNameTaken] = useState(false);
+	const [userData, setUserData] = useState({});
 	const userNameInput = useRef("");
-	// const [mapSelection, setMapSelection] = useState("city");
+	const [open, setOpen] = useState(false);
+
 
 	const setEditSelection = (value) => {
+		console.log(userData)
 		editSelection.current = value;
 	};
 
-	const [open, setOpen] = useState(false);
+	const newReality = () => {
+	}
 
 	const noSignup = () => {
 		setOpen(false);
@@ -130,15 +132,13 @@ function App() {
 	};
 
 	const handleStart = () => {
-		setUserNameTaken(false);
 		console.log(userNameInput.current.value)
-		get(child(userListRef, userNameInput.current.value)).then((snapshot) => {
-			if (snapshot.exists()) {
-			  console.log("Already exists!" + snapshot.val());
-			  setUserNameTaken(true);
-			} else {
+		get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
+			if (!snapshot.exists()) {
 			  newUser(userNameInput.current.value);
 			}
+			setOpen(false);
+			newReality();
 		  }).catch((error) => {
 			console.error(error);
 		  });
@@ -148,17 +148,28 @@ function App() {
 		let excessiveDownload = {};
 		get(userListRef).then((snapshot) => {
 			excessiveDownload = snapshot.val();	
-			console.log(excessiveDownload)
+			const userListLength = Object.keys(excessiveDownload).length;
+			let newUser = {};
+			// Check if the user already has an account. If so, let them change username but don't let them cheat
+			if (excessiveDownload[auth.currentUser.uid]) {
+				newUser = {userName: userName, location: excessiveDownload[auth.currentUser.uid].location, money: excessiveDownload[auth.currentUser.uid].money};
+			} else {
+				const [x,y] = cnqsoFastSquareSpiral(userListLength);
+				newUser = {userName: userName, location: [x,y], money: 1000};
+				set(child(userLocationsRef, `${x}/${y}`), auth.currentUser.uid);
+				
+			}
+			try {
+				set(child(userListRef, auth.currentUser.uid), newUser);
+				setUserData(newUser);
+			} catch (error) {
+				console.log(error);
+			}
 		})
 
-		const userListLength = Object.keys(excessiveDownload).length;
-		const [x, y] = cnqsoFastSquareSpiral(userListLength);
+		
 
-		const newUser = {userName: userName, location: `${y},${x}`, money: 1000};
-		try {set(child(userListRef, auth.currentUser.uid), newUser);
-		} catch (error) {
-			console.log(error);
-		}
+
 	}
 
 	const signInWithGoogle = () => {
@@ -166,9 +177,14 @@ function App() {
 		const provider = new GoogleAuthProvider();
 		signInWithPopup(auth, provider).then((result) => {
 			console.log(result.user.uid);
-			if ("userRef" !== "placeholder") {
-				setOpen(true);
-			}
+			get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
+				if (snapshot.exists()) {
+					console.log("Already has an account");
+					setUserData(snapshot.val());
+				} else {
+					setOpen(true);
+				}
+			});
 		});
 	};
 	const signOut = () => {
@@ -180,11 +196,7 @@ function App() {
 			<Dialog open={open} onClose={noSignup}>
 				<DialogContent>
 					<DialogContentText>Choose a new userName</DialogContentText>
-					{userNameTaken ? (
-						<TextField inputRef={userNameInput} error autoFocus id='commonsuserName' label='userName' variant='standard' />
-					) : (
 						<TextField inputRef={userNameInput} autoFocus id='commonsuserName' label='userName' variant='standard' />
-					)}
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={noSignup}>Cancel</Button>

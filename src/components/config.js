@@ -1,7 +1,7 @@
 const config = {
     //Board config
-    TILE_WIDTH: 120,
-    TILE_HEIGHT: 100,
+    TILE_WIDTH: 40,
+    TILE_HEIGHT: 40,
 
     //Tile config
     TILE_PIXELS: 64,
