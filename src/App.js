@@ -23,6 +23,7 @@ import { getDatabase, ref, set, push, onValue, get, child } from "firebase/datab
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useList, useListVals } from "react-firebase-hooks/database";
 import { CompareSharp } from "@mui/icons-material";
+import { common } from "@mui/material/colors";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
@@ -39,12 +40,14 @@ const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const database = getDatabase(app);
+const userDataRef = ref(database, "userData");
 const userListRef = ref(database, "userList");
 const userLocationsRef = ref(database, "userLocations");
 
-function sendRequest(method, y, x, building, buildingId, handler = "") {
+function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
 	const url = "http://localhost:8080/" + handler;
 	const body = JSON.stringify({
+		folder: folder,
 		id: buildingId,
 		x: x,
 		y: y,
@@ -76,7 +79,6 @@ function sendRequest(method, y, x, building, buildingId, handler = "") {
 		});
 }
 
-
 function cnqsoFastSquareSpiral(n) {
 	let dir = 1;
 	let loc = [0, 0];
@@ -107,103 +109,153 @@ function cnqsoFastSquareSpiral(n) {
 	return loc;
 }
 
-
 function App() {
+	const lastSnapshot = useRef({});
 	const [user] = useAuthState(auth);
-
-	const editSelection = useRef("road");
 	const [mapSelection, setMapSelection] = useState("city");
 	const [userData, setUserData] = useState({});
 	const userNameInput = useRef("");
 	const [open, setOpen] = useState(false);
-
-
+	const [mapDataLocation, setMapDataLocation] = useState("buildings");
+	const [loggedIn, setLoggedIn] = useState(false);
+	const editSelection = useRef("road");
 	const setEditSelection = (value) => {
-		console.log(userData)
+		console.log(user.uid);
 		editSelection.current = value;
 	};
 
-	const newReality = () => {
-	}
 
-	const noSignup = () => {
-		setOpen(false);
-		auth.signOut();
-	};
+	//I'd like to implement the code below, but I'm worried about an infinite loop
 
-	const handleStart = () => {
-		console.log(userNameInput.current.value)
-		get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
-			if (!snapshot.exists()) {
-			  newUser(userNameInput.current.value);
-			}
-			setOpen(false);
-			newReality();
-		  }).catch((error) => {
-			console.error(error);
-		  });
-	}
-
-	const newUser = (userName) => {
-		let excessiveDownload = {};
-		get(userListRef).then((snapshot) => {
-			excessiveDownload = snapshot.val();	
-			const userListLength = Object.keys(excessiveDownload).length;
-			let newUser = {};
-			// Check if the user already has an account. If so, let them change username but don't let them cheat
-			if (excessiveDownload[auth.currentUser.uid]) {
-				newUser = {userName: userName, location: excessiveDownload[auth.currentUser.uid].location, money: excessiveDownload[auth.currentUser.uid].money};
-			} else {
-				const [x,y] = cnqsoFastSquareSpiral(userListLength);
-				newUser = {userName: userName, location: [x,y], money: 1000};
-				set(child(userLocationsRef, `${x}/${y}`), auth.currentUser.uid);
-				
-			}
-			try {
-				set(child(userListRef, auth.currentUser.uid), newUser);
-				setUserData(newUser);
-			} catch (error) {
-				console.log(error);
-			}
-		})
-
-		
+	// if (!loggedIn && user || loggedIn && !user) {
+	// 	console.log("Preauthenticated user returning")
+	// 	try { get(child(userListRef, user.uid))
+	// 		.then((snapshot) => {
+	// 			if (snapshot.exists()) {
+	// 				commonsLogin(snapshot.val());
+	// 			} else {
+	// 				//Redundancy because an infinite auth loop would be very bad
+	// 				auth.signOut();
+	// 				setLoggedIn(false);
+	// 				signOut();
+	// 			}
+	// 		})
+	// 	} catch (error) {
+	// 		console.log(error);
+	// 		auth.signOut();
+	// 		setLoggedIn(false);
+	// 		signOut();
+	// 	}
+	// }
 
 
-	}
 
 	const signInWithGoogle = () => {
-		// console.log(auth);
 		const provider = new GoogleAuthProvider();
 		signInWithPopup(auth, provider).then((result) => {
 			console.log(result.user.uid);
 			get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
 				if (snapshot.exists()) {
-					console.log("Already has an account");
-					setUserData(snapshot.val());
+					commonsLogin(snapshot.val());
 				} else {
 					setOpen(true);
 				}
 			});
 		});
 	};
+
 	const signOut = () => {
+		setOpen(false);
 		auth.signOut();
+		setLoggedIn(false);
+	};
+
+	const handleNewUser = () => {
+		console.log(userNameInput.current.value);
+		get(child(userListRef, auth.currentUser.uid))
+			.then((snapshot) => {
+				if (!snapshot.exists()) {
+					newUser(userNameInput.current.value);
+				} else {
+					setOpen(false);
+					commonsLogin(auth.currentUser.uid);
+				}
+			})
+			.catch((error) => {
+				console.error(error);
+			});
+	};
+
+	const newUser = () => {
+		const userName = userNameInput.current.value
+		if (userName === "") {
+			signOut();
+			return;
+		}
+		let excessiveDownload = {};
+		get(userListRef).then((snapshot) => {
+			excessiveDownload = snapshot.val();
+			const userListLength = Object.keys(excessiveDownload).length;
+			let newUser = {};
+			// Check if the user already has an account. If so, let them change username but don't let them cheat
+			if (excessiveDownload[auth.currentUser.uid]) {
+				newUser = {
+					userName: userName,
+					location: excessiveDownload[auth.currentUser.uid].location,
+					money: excessiveDownload[auth.currentUser.uid].money,
+				};
+			} else {
+				const [x, y] = cnqsoFastSquareSpiral(userListLength);
+				newUser = { location: [x, y], money: 1000, userName: userName };
+				set(child(userLocationsRef, `${x}/${y}`), auth.currentUser.uid);
+			}
+			try {
+				set(child(userListRef, auth.currentUser.uid), newUser);
+				setOpen(false);
+				commonsLogin(newUser);
+				
+			} catch (error) {
+				signOut();
+			}
+		});
+	};
+
+	const commonsLogin = ({ location, money, userName }) => {
+		setUserData({location, money, userName });
+		console.log("commons login");
+		console.log(location, money, userName);
+		setMapDataLocation(`userData/${auth.currentUser.uid}`);
+		setLoggedIn(true);
+
+
+
+		//Switch map to user's
+		//grab the tiles from neighbors
+		//set user data
+
 	};
 
 	return (
 		<div className='App'>
-			<Dialog open={open} onClose={noSignup}>
+			<Dialog open={open} onClose={signOut}>
 				<DialogContent>
 					<DialogContentText>Choose a new userName</DialogContentText>
-						<TextField inputRef={userNameInput} autoFocus id='commonsuserName' label='userName' variant='standard' />
+					<TextField
+						inputRef={userNameInput}
+						autoFocus
+						id='commonsuserName'
+						label='userName'
+						variant='standard'
+					/>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={noSignup}>Cancel</Button>
-					<Button onClick={handleStart}>Start</Button>
+					<Button onClick={signOut}>Cancel</Button>
+					<Button onClick={handleNewUser}>Start</Button>
 				</DialogActions>
 			</Dialog>
-			<NavBar signIn={signInWithGoogle} signOut={signOut} user={user} />
+
+			<NavBar signIn={signInWithGoogle} signOut={signOut} user={loggedIn} />
+
 			<ToggleButtons
 				currentSelection={editSelection}
 				setEditSelection={setEditSelection}
@@ -211,7 +263,7 @@ function App() {
 				setMapSelection={setMapSelection}
 				sendRequest={sendRequest}
 			/>
-			<Canvas editSelection={editSelection} mapSelection={mapSelection} sendRequest={sendRequest} />
+			{loggedIn ? <Canvas key={mapDataLocation} editSelection={editSelection} mapSelection={mapSelection} sendRequest={sendRequest} mapDataLocation = {mapDataLocation}/> : null}
 		</div>
 	);
 }

@@ -25,7 +25,7 @@ const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 const database = getDatabase(app);
 const db = getDatabase();
-const buildingsRef = ref(db, "buildings");
+
 //For some reason, calling the database a second time helped debounce the database calls
 //Deleting the getDatabase(app) call broke the code
 //Worth investigating, this is too ugly even for me
@@ -84,12 +84,9 @@ function newID(x, y) {
 	return newId;
 }
 
-//Very simple but extremely vital
-//In my limited testing, this was faster than memoizing individual tiles or the whole canvas
-//I could imagine a scenario where memoizing each tile works better.
-const RowMemo = React.memo(Row);
 
-const Canvas = ({ editSelection, mapSelection, sendRequest }) => {
+const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) => {
+	const buildingsRef = ref(db, mapDataLocation);
 	const { width, height } = useWindowSize();
 	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
@@ -161,6 +158,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest }) => {
 	};
 
 	const editMap = (x, y) => {
+		console.log(mapDataLocation)
 		//For special buildings, send to unique handlers. Otherwise, create an arbitrary building
 		if (editSelection.current === "delete") {
 			deleteBuilding(tiles[y][x].buildingId);
@@ -174,7 +172,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest }) => {
 			//TODO check delete first
 			if (boundsempty(yMin, yMax, xMin, xMax) === true) {
 				const newId = newID(x, y);
-				sendRequest("POST", y, x, editSelection.current, newId);
+				sendRequest("POST", y, x, editSelection.current, newId, mapDataLocation);
 				drawBuilding(
 					yMin,
 					yMax,
@@ -197,7 +195,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest }) => {
 					y,
 					buildingsConfig[building].size
 				);
-				sendRequest("DELETE", y, x, "delete", buildingID);
+				sendRequest("DELETE", y, x, "delete", buildingID, mapDataLocation);
 				drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
 			} catch (error) {
 				console.log(error);
@@ -290,6 +288,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest }) => {
 						}
 					}
 				}
+				console.log(buildingsRef)
 
 				setTiles([...tempTiles2]);
 			}
