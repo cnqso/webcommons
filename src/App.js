@@ -7,6 +7,7 @@ import ToggleButtons from "./components/ToggleButtons";
 import Canvas from "./components/Canvas";
 import config from "./components/config";
 import NavBar from "./components/NavBar";
+import emptyPlot from "./rawTiles.json";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -43,6 +44,7 @@ const database = getDatabase(app);
 const userDataRef = ref(database, "userData");
 const userListRef = ref(database, "userList");
 const userLocationsRef = ref(database, "userLocations");
+const userTilesRef = ref(database, "userTiles");
 
 function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
 	const url = "http://localhost:8080/" + handler;
@@ -109,6 +111,46 @@ function cnqsoFastSquareSpiral(n) {
 	return loc;
 }
 
+function reverseSquareSpiral(coordinates) {
+	const [x, y] = coordinates;
+	let targetCoordinates = [
+		[x - 1, y + 1],
+		[x, y + 1],
+		[x + 1, y + 1],
+		[x - 1, y],
+		[x + 1, y],
+		[x - 1, y - 1],
+		[x, y - 1],
+		[x + 1, y - 1],
+	];
+	targetCoordinates = targetCoordinates.map(String);
+	let outputArray = new Array(8).fill(-1);
+	let foundBuildings = 0;
+	let dir = 1;
+	let loc = [0, 0];
+	let len = 1;
+	let runi = 1;
+	let i = 0;
+	while (true) {
+		for (let k = 0; k < 2; k++) {
+			runi = len + i;
+			while (i < runi) {
+				if (targetCoordinates.indexOf(loc.toString()) !== -1) {
+					outputArray[targetCoordinates.indexOf(loc.toString())] = i;
+					foundBuildings++;
+				}
+				if (foundBuildings > 7 || i > 500) {
+					return outputArray;
+				}
+				loc[k] += dir;
+				i++;
+			}
+		}
+		len++;
+		dir = ~dir + 1;
+	}
+}
+
 function App() {
 	const lastSnapshot = useRef({});
 	const [user] = useAuthState(auth);
@@ -120,10 +162,9 @@ function App() {
 	const [loggedIn, setLoggedIn] = useState(false);
 	const editSelection = useRef("road");
 	const setEditSelection = (value) => {
-		console.log(user.uid);
 		editSelection.current = value;
 	};
-
+	const [neighborTiles, setNeighborTiles] = useState([]);
 
 	//I'd like to implement the code below, but I'm worried about an infinite loop
 
@@ -148,8 +189,6 @@ function App() {
 	// 	}
 	// }
 
-
-
 	const signInWithGoogle = () => {
 		const provider = new GoogleAuthProvider();
 		signInWithPopup(auth, provider).then((result) => {
@@ -171,7 +210,6 @@ function App() {
 	};
 
 	const handleNewUser = () => {
-		console.log(userNameInput.current.value);
 		get(child(userListRef, auth.currentUser.uid))
 			.then((snapshot) => {
 				if (!snapshot.exists()) {
@@ -187,7 +225,7 @@ function App() {
 	};
 
 	const newUser = () => {
-		const userName = userNameInput.current.value
+		const userName = userNameInput.current.value;
 		if (userName === "") {
 			signOut();
 			return;
@@ -207,13 +245,12 @@ function App() {
 			} else {
 				const [x, y] = cnqsoFastSquareSpiral(userListLength);
 				newUser = { location: [x, y], money: 1000, userName: userName };
-				set(child(userLocationsRef, `${x}/${y}`), auth.currentUser.uid);
+				set(child(userLocationsRef, userListLength.toString()), auth.currentUser.uid);
 			}
 			try {
 				set(child(userListRef, auth.currentUser.uid), newUser);
 				setOpen(false);
 				commonsLogin(newUser);
-				
 			} catch (error) {
 				signOut();
 			}
@@ -221,18 +258,33 @@ function App() {
 	};
 
 	const commonsLogin = ({ location, money, userName }) => {
-		setUserData({location, money, userName });
-		console.log("commons login");
-		console.log(location, money, userName);
+		setUserData({ location, money, userName });
+		console.log(`Logging in ${userName} - uid ${auth.currentUser.uid} - at ${location} with $${money}`);
 		setMapDataLocation(`userData/${auth.currentUser.uid}`);
+
+		let surroundingTiles = [];
+		const surroundingUsers = reverseSquareSpiral(location);
+		console.log(surroundingUsers[0]);
+		for (let i = 0; i < 8; i++) {
+			get(child(userTilesRef, surroundingUsers[i].toString())).then((snapshot) => {
+				if (snapshot.exists()) {
+					console.log(snapshot.val());
+					surroundingTiles[i] = snapshot.val();
+				} else {
+					surroundingTiles[i] = emptyPlot;
+				}
+			});
+		}
+		console.log(surroundingUsers);
+		console.log(surroundingTiles);
+		setNeighborTiles(surroundingTiles);
+		//setSurroundingTiles state to surroundingTiles
+
 		setLoggedIn(true);
-
-
 
 		//Switch map to user's
 		//grab the tiles from neighbors
 		//set user data
-
 	};
 
 	return (
@@ -263,7 +315,16 @@ function App() {
 				setMapSelection={setMapSelection}
 				sendRequest={sendRequest}
 			/>
-			{loggedIn ? <Canvas key={mapDataLocation} editSelection={editSelection} mapSelection={mapSelection} sendRequest={sendRequest} mapDataLocation = {mapDataLocation}/> : null}
+			{loggedIn ? (
+				<Canvas
+					key={mapDataLocation}
+					editSelection={editSelection}
+					mapSelection={mapSelection}
+					sendRequest={sendRequest}
+					mapDataLocation={mapDataLocation}
+					neighborTiles={neighborTiles}
+				/>
+			) : null}
 		</div>
 	);
 }

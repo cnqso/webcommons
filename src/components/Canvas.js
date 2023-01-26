@@ -1,3 +1,5 @@
+/** @format */
+
 import React, { useState, useRef, useEffect } from "react";
 import jsonTiles from "../map.json";
 import "./Canvas.css";
@@ -25,14 +27,12 @@ const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 const database = getDatabase(app);
 const db = getDatabase();
-
 //For some reason, calling the database a second time helped debounce the database calls
 //Deleting the getDatabase(app) call broke the code
 //Worth investigating, this is too ugly even for me
 
 //Since the react-zoomable-component box only takes hardcoded pixel values, we need to size it in javascript
-//This will be a pain to integrate with CSS, but at least it doesn't hurt performance
-//TODO: Fix issue where the canvas gets bigger on window expand but never shrinks
+//TODO: Make it work cleaner. I might be able to just wrap it in a css container and give it an arbitrarily large constant value
 const useWindowSize = () => {
 	const [windowSize, setWindowSize] = React.useState({
 		width: 1000,
@@ -58,9 +58,7 @@ const useWindowSize = () => {
 	return windowSize;
 };
 
-//It seems like React checks memoization in the naive way (store every value, check each value one at a time)
-//There are 12,000*N key-value pairs that need to be checked, 120*N for each row.
-//This is a lot of work for the browser to do, and it's not necessary. We can just check the checksum.
+//Was needed for the old method of memoizing dom components. Keeping it here in case I need it again
 function checksum(array) {
 	var chk = 0x12345678;
 	let x = 0;
@@ -75,49 +73,39 @@ function checksum(array) {
 }
 
 //Custom method for generating unique chronological IDs
-//Returns a short string, functionally the time in hex plus a checksum of the x, y, and building
-//TODO: Keep x and y as ints, current implementation doesn't guarantee uniqueness
-//Maybe add firebase user ID
+//Returns a short string, functionally the time in duotrigesimal plus a checksum of the x, y, and building
 function newID(x, y) {
 	const time = (Date.now() - 1672549200000).toString(32);
 	const newId = time.concat((x + y * 120).toString(32));
 	return newId;
 }
 
-
-const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) => {
+const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, neighborTiles }) => {
 	const buildingsRef = ref(db, mapDataLocation);
+	const userLocationsRef = ref(db, "userLocations");
 	const { width, height } = useWindowSize();
 	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
 
 	const clickxy = useRef([0, 0]);
 	const [tiles, setTiles] = useState(jsonTiles);
+	const [surroundingTiles, setSurroundingTiles] = useState([[0],[0],[0],[0],[1],[1],[1],[1]]);
 	const lastSnapshot = useRef({});
 
 	const infoHandler = (x, y) => {
+		//Gives tile and building information at click lcoation
 		//Todo - make this a tooltip
 		console.log(
-			"Building data: \n" +
-				tiles[y][x].buildingId +
-				": " +
-				JSON.stringify(
-					lastSnapshot.current[tiles[y][x].buildingId],
-					null,
-					2
-				) +
-				" Tile data: " +
-				JSON.stringify(tiles[y][x], null, 2)
+			`Building data: \n ${tiles[y][x].buildingId}: ${JSON.stringify(
+				lastSnapshot.current[tiles[y][x].buildingId],
+				null,
+				2
+			)} Tile data: ${JSON.stringify(tiles[y][x], null, 2)}`
 		);
 	};
 
 	const boundsempty = (yMin, yMax, xMin, xMax) => {
-		if (
-			xMin < 0 ||
-			yMin < 0 ||
-			xMax >= config.TILE_WIDTH ||
-			yMax >= config.TILE_HEIGHT
-		) {
+		if (xMin < 0 || yMin < 0 || xMax >= config.TILE_WIDTH || yMax >= config.TILE_HEIGHT) {
 			console.log("Out of bounds");
 			return false;
 		}
@@ -140,12 +128,10 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 		let k = 0;
 
 		//Determine the offset based on building levels
-		const developmentOffset = level*9
-	
+		const developmentOffset = level * 9;
+
 		const spriteOffset =
-			buildingsConfig[type].sprite.y * 16 +
-			buildingsConfig[type].sprite.x +
-			developmentOffset;
+			buildingsConfig[type].sprite.y * 16 + buildingsConfig[type].sprite.x + developmentOffset;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				tempTiles[i][j].type = type;
@@ -158,7 +144,6 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 	};
 
 	const editMap = (x, y) => {
-		console.log(mapDataLocation)
 		//For special buildings, send to unique handlers. Otherwise, create an arbitrary building
 		if (editSelection.current === "delete") {
 			deleteBuilding(tiles[y][x].buildingId);
@@ -173,14 +158,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 			if (boundsempty(yMin, yMax, xMin, xMax) === true) {
 				const newId = newID(x, y);
 				sendRequest("POST", y, x, editSelection.current, newId, mapDataLocation);
-				drawBuilding(
-					yMin,
-					yMax,
-					xMin,
-					xMax,
-					editSelection.current,
-					newId
-				);
+				drawBuilding(yMin, yMax, xMin, xMax, editSelection.current, newId);
 				//TODO if the post request fails, the tilemap will be reverted to the previous state
 			}
 		}
@@ -190,11 +168,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 		if ("allowed to do this" !== "placeholder" && buildingID) {
 			try {
 				const { x, y, building } = lastSnapshot.current[buildingID];
-				const { xMin, xMax, yMin, yMax } = getBounds(
-					x,
-					y,
-					buildingsConfig[building].size
-				);
+				const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingsConfig[building].size);
 				sendRequest("DELETE", y, x, "delete", buildingID, mapDataLocation);
 				drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
 			} catch (error) {
@@ -214,12 +188,8 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 	};
 
 	const handleOnClick = (coordinates) => {
-		const adjustedX = Math.floor(
-			(coordinates[0] + config.X_ERROR) / config.TILE_PIXELS
-		);
-		const adjustedY = Math.floor(
-			(coordinates[1] + config.Y_ERROR) / config.TILE_PIXELS
-		);
+		const adjustedX = Math.floor((coordinates[0] + config.X_ERROR) / config.TILE_PIXELS) - config.TILE_WIDTH;
+		const adjustedY = Math.floor((coordinates[1] + config.Y_ERROR) / config.TILE_PIXELS) - config.TILE_HEIGHT;
 
 		if ("authentication" !== "placeholder") {
 			editMap(adjustedX, adjustedY);
@@ -234,25 +204,22 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 			const data = snapshot.val();
 			const oldKeys = Object.keys(lastSnapshot.current);
 			const keys = Object.keys(data);
-			const lastSnapshotLength = oldKeys.length;
+			let lastSnapshotLength = oldKeys.length;
 
 			let tempTiles2 = tiles;
 
 			if (keys.length < lastSnapshotLength) {
 				//search for deleted buildings
-				console.log("Something was deleted");
+				console.log("something was deleted");
 				for (let i = 0; i < lastSnapshotLength; i++) {
 					if (!data[oldKeys[i]]) {
-						const { x, y, building } =
-							lastSnapshot.current[oldKeys[i]];
-						const { xMin, xMax, yMin, yMax } = getBounds(
-							x,
-							y,
-							buildingsConfig[building].size
-						);
+						const { x, y, building } = lastSnapshot.current[oldKeys[i]];
+						const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingsConfig[building].size);
 						drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
 					}
 				}
+				lastSnapshot.current = data;
+				lastSnapshotLength = keys.length;
 			} else {
 				//Check the previous snapshot length and render all objects after that
 				//Building IDs are chronological by time for this purpose, best of both worlds of arrays and objects
@@ -266,7 +233,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 					//This is like editMap() but doesn't change state until all calculations are done. Faster.
 					//TODO: tempTiles was already a bad enough variable name
 					let l = 0;
-					let developmentOffset = thisBuilding.level*9;
+					let developmentOffset = thisBuilding.level * 9;
 
 					const spriteOffset =
 						buildingsConfig[thisBuilding.building].sprite.y * 16 +
@@ -288,16 +255,14 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 						}
 					}
 				}
-				console.log(buildingsRef)
 
 				setTiles([...tempTiles2]);
 			}
 
-
 			//Lastly, check for important changes to buildings
-			for(let i = 0; i < keys.length; i++){
-				if(lastSnapshot.current[keys[i]] === undefined) continue;
-				if(data[keys[i]].level !== lastSnapshot.current[keys[i]].level){
+			for (let i = 0; i < keys.length; i++) {
+				if (lastSnapshot.current[keys[i]] === undefined) continue;
+				if (data[keys[i]].level !== lastSnapshot.current[keys[i]].level) {
 					console.log("Level changed");
 					let thisBuilding = data[keys[i]];
 					let { xMin, xMax, yMin, yMax } = getBounds(
@@ -306,13 +271,28 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 						buildingsConfig[thisBuilding.building].size
 					);
 					drawBuilding(yMin, yMax, xMin, xMax, thisBuilding.building, keys[i], thisBuilding.level);
-			
 				}
 			}
 			lastSnapshot.current = data;
 			//Save the length of the snapshot so that we only render the
 		});
 	}, []);
+
+
+
+	// useEffect(() => {
+	// 	get(child(dbRef, `users/${userId}`)).then((snapshot) => {
+	// 		if (snapshot.exists()) {
+	// 		  console.log(snapshot.val());
+	// 		} else {
+	// 		  console.log("No data available");
+	// 		}
+	// 	  }).catch((error) => {
+	// 		console.error(error);
+	// 	  });
+	// 	console.log("run exactly once")
+	// },[]
+	// ) ;
 
 	//Tooltip should live at exactly client 0,0 at all times and on click move to the offset of clickxy.current clientX and clientY
 	return (
@@ -325,23 +305,18 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 			}}>
 			<Space
 				onDecideHowToHandlePress={(e, coords) => {
-					clickxy.current = [
-						coords.x,
-						coords.y,
-						coords.clientX,
-						coords.clientY,
-					]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
+					clickxy.current = [coords.x, coords.y, coords.clientX, coords.clientY]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
 				}}
 				//onHover={(e, c) => setHover(c)}
 				style={{ border: "solid 1px black" }}
 				onCreate={(viewPort) => {
 					viewPort.setBounds({
-						x: [mapWidth * -1, mapWidth * 2],
-						y: [mapHeight * -1, mapHeight * 2],
+						x: [mapWidth * -3, mapWidth * 6],
+						y: [mapHeight * -3, mapHeight * 6],
 					});
 					viewPort.camera.centerFitAreaIntoView({
-						left: mapWidth / 10,
-						top: mapHeight / 10,
+						left: mapWidth*3 / 10,
+						top: mapHeight*3 / 10,
 						width: 1000,
 						height: 1000,
 					});
@@ -351,7 +326,13 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation}) =>
 					onTap={() => {
 						handleOnClick(clickxy.current);
 					}}>
-					<Row rowChecksum={checksum(tiles[0])} tiles={tiles} mapSelection={mapSelection} lastSnapshot={lastSnapshot}/>
+					<Row
+						rowChecksum={checksum(tiles[0])}
+						tiles={tiles}
+						mapSelection={mapSelection}
+						lastSnapshot={lastSnapshot}
+						neighborTiles={neighborTiles}
+					/>
 				</Pressable>
 			</Space>
 		</div>
