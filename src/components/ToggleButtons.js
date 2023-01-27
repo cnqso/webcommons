@@ -33,7 +33,7 @@ function ToggleButtons(props) {
 
 
     function sendTickRequest() {
-      props.sendRequest("POST", 0, 0, "tick", 0, "tick");
+      props.sendRequest("POST", 0, 0, "tick", 0, 0, "tick");
     }
 
 
@@ -72,6 +72,7 @@ function ToggleButtons(props) {
       </Select>
     </FormControl>
       <span><button onClick={sendTickRequest}>Simulate one tick</button></span>
+      <span>{props.userData.userName} ${props.userData.money}</span>
       </>
     );
   }

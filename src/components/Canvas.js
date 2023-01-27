@@ -80,7 +80,7 @@ function newID(x, y) {
 	return newId;
 }
 
-const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, neighborTiles }) => {
+const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, neighborTiles, userData, setUserData }) => {
 	const buildingsRef = ref(db, mapDataLocation);
 	const userLocationsRef = ref(db, "userLocations");
 	const { width, height } = useWindowSize();
@@ -153,13 +153,18 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, nei
 			const buildingSize = buildingsConfig[editSelection.current].size;
 
 			const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingSize);
-			//console.log(xMin, xMax, yMin, yMax);
-			//TODO check delete first
+
+			if (userData.money < buildingsConfig[editSelection.current].cost) {
+				console.log("Not enough money");
+				return;
+			}
+
 			if (boundsempty(yMin, yMax, xMin, xMax) === true) {
 				const newId = newID(x, y);
 				sendRequest("POST", y, x, editSelection.current, newId, mapDataLocation);
 				drawBuilding(yMin, yMax, xMin, xMax, editSelection.current, newId);
-				//TODO if the post request fails, the tilemap will be reverted to the previous state
+
+				setUserData({...userData, money: userData.money - buildingsConfig[editSelection.current].cost});
 			}
 		}
 	};
@@ -171,6 +176,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, nei
 				const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingsConfig[building].size);
 				sendRequest("DELETE", y, x, "delete", buildingID, mapDataLocation);
 				drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
+				setUserData({...userData, money: userData.money - 1})
 			} catch (error) {
 				console.log(error);
 			}

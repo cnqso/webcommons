@@ -67,7 +67,6 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 }
 
 function neighborsMap(ctx, rawTiles, tileset) {
-	console.log(rawTiles)
 	const w = config.TILE_WIDTH;
 	const h = config.TILE_HEIGHT;
 	const offsets = [
@@ -83,10 +82,26 @@ function neighborsMap(ctx, rawTiles, tileset) {
 
 	let tile = 0;
 	for (let i = 0; i < rawTiles.length; i++) {
+
+		const thisPlot = rawTiles[i];
+
 		for (let j = 0; j < rawTiles[i].length; j++) {
 			const drawX = ((j % w) + offsets[i][0]) * tilePx;
 			const drawY = (Math.floor(j / w) + offsets[i][1]) * tilePx;
-			tile = rawTiles[i][j];
+			tile = thisPlot[j];
+
+			if (tile > 959) {
+				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
+				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
+				tile += (j > 0 && thisPlot[j - 1] > 959);
+				tile += (j%w === 0);
+				tile += 2 * (j < w*h && thisPlot[j + 1] > 959);
+				tile += 2 * (j%w === w-1);
+				tile += 4 * (j > w && thisPlot[j - w] > 959)
+				tile += 4 * (j < w);
+				tile += 8 * (j < w*(h-1) && thisPlot[j + w] > 959)
+				tile += 8 * (j > w*(h-1));
+			}
 			const srcX = (tile % 16) * sourcePx;
 			const srcY = Math.floor(tile / 16) * sourcePx;
 			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx, drawX, drawY, tilePx, tilePx);

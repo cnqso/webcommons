@@ -6,7 +6,8 @@
         "y": 60,
         "x": 0
     },
-    "jsoncommentbadpractice" : "Roads go from 64 to 239"
+    "cost": 5,
+    "buildingCode": null
 },
 "residential": {
     "color": "#700000",
@@ -14,7 +15,9 @@
     "sprite": {
         "y": 15,
         "x": 0
-    }
+    },
+    "cost": 50,
+    "buildingCode": 0
 },
 "industrial": {
     "color": "#ffac41",
@@ -22,7 +25,9 @@
     "sprite": {
         "y": 38,
         "x": 4
-    }
+    },
+    "cost": 50,
+    "buildingCode": 1
 },
 "commercial": {
     "color": "#1100ff",
@@ -30,7 +35,9 @@
     "sprite": {
         "y": 26,
         "x": 7
-    }
+    },
+    "cost": 50,
+    "buildingCode": 2
 },
 "coal": {
     "color": "#ffacc1",
@@ -38,7 +45,9 @@
     "sprite": {
         "y": 50,
         "x": 11
-    }
+    },
+    "cost": 200,
+    "buildingCode": null
 },
 "empty": {
     "color": "#1b1b22",
@@ -46,6 +55,18 @@
     "sprite": {
         "y": 0,
         "x": 0
-    }
+    },
+    "cost": 1,
+    "buildingCode": null
+},
+"delete": {
+    "color": "#000000",
+    "size": 1,
+    "sprite": {
+        "y": 0,
+        "x": 0
+    },
+    "cost": 1,
+    "buildingCode": null
 }
 }

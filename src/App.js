@@ -22,9 +22,6 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useList, useListVals } from "react-firebase-hooks/database";
-import { CompareSharp } from "@mui/icons-material";
-import { common } from "@mui/material/colors";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
@@ -41,7 +38,6 @@ const app = initializeApp(firebaseConfig);
 // const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const database = getDatabase(app);
-const userDataRef = ref(database, "userData");
 const userListRef = ref(database, "userList");
 const userLocationsRef = ref(database, "userLocations");
 const userTilesRef = ref(database, "userTiles");
@@ -57,14 +53,14 @@ function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
 	});
 	const xhr = new XMLHttpRequest();
 	xhr.withCredentials = false;
-	// xhr.responseType = "json";
+	xhr.responseType = "text";
 
 	xhr.addEventListener("readystatechange", function () {
 		if (this.readyState === this.DONE) {
 			const response = this.responseText;
 			if (response) {
-				//If you get a negative response, do a get request to get the current state of the tilemap
 				console.log(response);
+				return response;
 			}
 		}
 	});
@@ -78,6 +74,7 @@ function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
 		})
 		.catch(function (error) {
 			console.log(error);
+			return error;
 		});
 }
 
@@ -152,7 +149,6 @@ function reverseSquareSpiral(coordinates) {
 }
 
 function App() {
-	const lastSnapshot = useRef({});
 	const [user] = useAuthState(auth);
 	const [mapSelection, setMapSelection] = useState("city");
 	const [userData, setUserData] = useState({});
@@ -189,10 +185,14 @@ function App() {
 	// 	}
 	// }
 
+	//if (user) {
+		//commonsLogin() or something
+		//Actually, webstorage would be prefferable 
+
+
 	const signInWithGoogle = () => {
 		const provider = new GoogleAuthProvider();
 		signInWithPopup(auth, provider).then((result) => {
-			console.log(result.user.uid);
 			get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
 				if (snapshot.exists()) {
 					commonsLogin(snapshot.val());
@@ -209,19 +209,15 @@ function App() {
 		setLoggedIn(false);
 	};
 
-	const handleNewUser = () => {
-		get(child(userListRef, auth.currentUser.uid))
-			.then((snapshot) => {
-				if (!snapshot.exists()) {
-					newUser(userNameInput.current.value);
-				} else {
-					setOpen(false);
-					commonsLogin(auth.currentUser.uid);
-				}
-			})
-			.catch((error) => {
-				console.error(error);
-			});
+	function handleNewUser() {
+		const userName = userNameInput.current.value;
+		if (userName === "") {
+			signOut();
+			return;
+		}
+
+		newUserRequest("POST", auth.currentUser.uid, userName)
+
 	};
 
 	const newUser = () => {
@@ -264,19 +260,15 @@ function App() {
 
 		let surroundingTiles = [];
 		const surroundingUsers = reverseSquareSpiral(location);
-		console.log(surroundingUsers[0]);
 		for (let i = 0; i < 8; i++) {
 			get(child(userTilesRef, surroundingUsers[i].toString())).then((snapshot) => {
 				if (snapshot.exists()) {
-					console.log(snapshot.val());
 					surroundingTiles[i] = snapshot.val();
 				} else {
 					surroundingTiles[i] = emptyPlot;
 				}
 			});
 		}
-		console.log(surroundingUsers);
-		console.log(surroundingTiles);
 		setNeighborTiles(surroundingTiles);
 		//setSurroundingTiles state to surroundingTiles
 
@@ -286,6 +278,46 @@ function App() {
 		//grab the tiles from neighbors
 		//set user data
 	};
+
+
+
+
+	function newUserRequest(method, userId, folder) {
+		const url = "http://localhost:8080/newUser";
+		const body = JSON.stringify({
+			folder: folder,
+			id: userId
+		});
+		const xhr = new XMLHttpRequest();
+		xhr.withCredentials = false;
+		xhr.responseType = "text";
+	
+		xhr.addEventListener("readystatechange", function () {
+			if (this.readyState === this.DONE) {
+				const response = this.responseText;
+				if (response) {
+					console.log(response);
+					const location = response.split(',');
+					setOpen(false);
+					commonsLogin({ location: [location[1], location[2]], money: 0, userName: body.id });
+					return response;
+				}
+			}
+		});
+		auth.currentUser
+			.getIdToken(/* forceRefresh */ true)
+			.then(function (idToken) {
+				xhr.open(method, url);
+				xhr.setRequestHeader("Authorization", idToken);
+				xhr.setRequestHeader("Content-Type", "application/json");
+				xhr.send(body);
+			})
+			.catch(function (error) {
+				console.log(error);
+				signOut();
+				return error;
+			});
+	}
 
 	return (
 		<div className='App'>
@@ -314,6 +346,7 @@ function App() {
 				mapSelection={mapSelection}
 				setMapSelection={setMapSelection}
 				sendRequest={sendRequest}
+				userData={userData}
 			/>
 			{loggedIn ? (
 				<Canvas
@@ -323,6 +356,8 @@ function App() {
 					sendRequest={sendRequest}
 					mapDataLocation={mapDataLocation}
 					neighborTiles={neighborTiles}
+					userData={userData}
+					setUserData={setUserData}
 				/>
 			) : null}
 		</div>
