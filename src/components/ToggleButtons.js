@@ -55,17 +55,25 @@ function ToggleButtons(props) {
 		textAlign: "center",
 	}));
 
-	const MapSelection = () => {
+	const MapSelection = (matches) => {
+		let label = "";
+		let maxWidth = 70;
+		let maxHeight = 40;
+		if (!matches) {
+			label = "Map"
+			maxWidth = 70;
+			maxHeight = 70;
+		}
 		return (
-			<FormControl sx={{ m: 1, minWidth: 50, maxWidth: 70, pt: 1 }} size='small'>
-				<InputLabel id='map-select' sx={{ mt: 1 }}>
+			<FormControl sx={{ m: (!matches), maxHeight: maxHeight, maxWidth: maxWidth, pt: (!matches) }} size='small'>
+				{matches ? <InputLabel/> : <InputLabel id='map-select' sx={{ mt: 1 }}>
 					Map
-				</InputLabel>
+				</InputLabel>}
 				<Select
 					labelId='map-select'
 					id='map-select'
 					value={props.mapSelection}
-					label='Map'
+					label={label}
 					onChange={handleMapChange}>
 					<MenuItem value={"city"}>
 						<LocationCityIcon />
@@ -92,7 +100,9 @@ function ToggleButtons(props) {
 				exclusive
 				onChange={handleChange}
 				aria-label='Platform'
-				orientation={orientation}>
+				orientation={orientation}
+				
+				>
           {matches ? 
 				<Text variant='outlined' square sx={{ borderRadius: 1 }}>
 					<h2 style={{ margin: 3, padding: 0 }}>${props.userData.money}</h2>
@@ -173,8 +183,8 @@ function ToggleButtons(props) {
 			</ToggleButtonGroup>
 			<br />
 			{matches ? null : <>
-			<MapSelection/> 	<Text sx={{ display: "inline-block", borderRadius: 1, p:0, m:"auto", align:"center", left:5}}>
-					<h2 >${props.userData.money}</h2>
+			<MapSelection/> 	<Text sx={{ display: "inline-block", p:0, m:"auto", align:"center", left:5}}>
+					<h2 style={{margin: 10}} >${props.userData.money}</h2>
 				</Text> </>}
 		</Paper>
 	);

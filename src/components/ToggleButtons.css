@@ -1,4 +1,8 @@
 .toggleButtons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
     background-color: rgba(255, 255, 255, 0.7);
     transition: background-color 0.5s;
     color: #ffffff;
@@ -17,9 +21,12 @@
 @media (max-width: 600px) {
     .toggleButtons {
         background-color: rgba(255, 255, 255, 1);
-        width: 100vw;
-        overflow-x:visible;
-        left: 0px;
-        margin-top:5px;
+        max-width: 100vw;
+        margin-top:4px;
+        left:0px;
+        align-items: center;
+    }
+    .toggleButtons:hover {
+        background-color: rgba(255, 255, 255, 1);
     }
 }
