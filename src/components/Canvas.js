@@ -100,7 +100,7 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, nei
 				lastSnapshot.current[tiles[y][x].buildingId],
 				null,
 				2
-			)} Tile data: ${JSON.stringify(tiles[y][x], null, 2)}`
+			)} \nTile data: [${x}, ${y}] \n${JSON.stringify(tiles[y][x], null, 2)}`
 		);
 	};
 
@@ -305,8 +305,6 @@ const Canvas = ({ editSelection, mapSelection, sendRequest, mapDataLocation, nei
 		<div
 			className='Canvas'
 			style={{
-				width: width,
-				height: height / 1.15,
 				position: "relative",
 			}}>
 			<Space

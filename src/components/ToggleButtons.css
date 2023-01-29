@@ -1,0 +1,25 @@
+.toggleButtons {
+    background-color: rgba(255, 255, 255, 0.7);
+    transition: background-color 0.5s;
+    color: #ffffff;
+    margin-top: 10px;
+    z-index: 5;
+    position:fixed;
+    left: 5px;
+    
+}
+
+.toggleButtons:hover {
+    background-color: rgba(255, 255, 255, 1); 
+    transition: background-color 0.5s;
+}
+
+@media (max-width: 600px) {
+    .toggleButtons {
+        background-color: rgba(255, 255, 255, 1);
+        width: 100vw;
+        overflow-x:visible;
+        left: 0px;
+        margin-top:5px;
+    }
+}

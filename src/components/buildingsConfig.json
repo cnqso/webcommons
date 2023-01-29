@@ -1,72 +1,105 @@
 {
-"road": {
-    "color": "#463836",
-    "size": 1,
-    "sprite": {
-        "y": 60,
-        "x": 0
+    "road": {
+        "color": "#463836",
+        "size": 1,
+        "sprite": {
+            "y": 60,
+            "x": 0
+        },
+        "cost": 5,
+        "buildingCode": null
     },
-    "cost": 5,
-    "buildingCode": null
-},
-"residential": {
-    "color": "#700000",
-    "size": 3,
-    "sprite": {
-        "y": 15,
-        "x": 0
+    "pole": {
+        "color": "#000040",
+        "size": 1,
+        "sprite": {
+            "y": 13,
+            "x": 3
+        },
+        "cost": 5,
+        "buildingCode": null
     },
-    "cost": 50,
-    "buildingCode": 0
-},
-"industrial": {
-    "color": "#ffac41",
-    "size": 3,
-    "sprite": {
-        "y": 38,
-        "x": 4
+    "residential": {
+        "color": "#700000",
+        "size": 3,
+        "sprite": {
+            "y": 15,
+            "x": 0
+        },
+        "cost": 50,
+        "buildingCode": 0
     },
-    "cost": 50,
-    "buildingCode": 1
-},
-"commercial": {
-    "color": "#1100ff",
-    "size": 3,
-    "sprite": {
-        "y": 26,
-        "x": 7
+    "industrial": {
+        "color": "#ffac41",
+        "size": 3,
+        "sprite": {
+            "y": 38,
+            "x": 4
+        },
+        "cost": 50,
+        "buildingCode": 1
     },
-    "cost": 50,
-    "buildingCode": 2
-},
-"coal": {
-    "color": "#ffacc1",
-    "size": 4,
-    "sprite": {
-        "y": 50,
-        "x": 11
+    "commercial": {
+        "color": "#1100ff",
+        "size": 3,
+        "sprite": {
+            "y": 26,
+            "x": 7
+        },
+        "cost": 50,
+        "buildingCode": 2
     },
-    "cost": 200,
-    "buildingCode": null
-},
-"empty": {
-    "color": "#1b1b22",
-    "size": 1,
-    "sprite": {
-        "y": 0,
-        "x": 0
+    "coal": {
+        "color": "#ffacc1",
+        "size": 4,
+        "sprite": {
+            "y": 50,
+            "x": 11
+        },
+        "cost": 200,
+        "buildingCode": null,
+        "power": 10
     },
-    "cost": 1,
-    "buildingCode": null
-},
-"delete": {
-    "color": "#000000",
-    "size": 1,
-    "sprite": {
-        "y": 0,
-        "x": 0
+    "nuclear": {
+        "color": "#fda4c1",
+        "size": 4,
+        "sprite": {
+            "y": 50,
+            "x": 11
+        },
+        "cost": 500,
+        "buildingCode": null,
+        "power": 50
     },
-    "cost": 1,
-    "buildingCode": null
-}
-}
+    "solar": {
+        "color": "#Faacc1",
+        "size": 2,
+        "sprite": {
+            "y": 50,
+            "x": 11
+        },
+        "cost": 150,
+        "buildingCode": null,
+        "power": 5
+    },
+    "empty": {
+        "color": "#1b1b22",
+        "size": 1,
+        "sprite": {
+            "y": 0,
+            "x": 0
+        },
+        "cost": 1,
+        "buildingCode": null
+    },
+    "delete": {
+        "color": "#000000",
+        "size": 1,
+        "sprite": {
+            "y": 0,
+            "x": 0
+        },
+        "cost": 1,
+        "buildingCode": null
+    }
+    }

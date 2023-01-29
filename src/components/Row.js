@@ -13,6 +13,8 @@ const sourcePx = config.TILEMAP_SQUARE;
 const mapStyles = config.MAP_STYLES;
 
 function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
+	let roads = 0; //Used for debugging
+	let busyRoads = 0;
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;
@@ -27,13 +29,12 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 					ctx.fillRect(drawX, drawY, tilePx, tilePx);
 					continue;
 				}
-				let heatTile;
+				let heatTile = 0;
 				try {
 					const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
 					heatTile = heatMap[mapStyle.heatMapIndex];
-				} catch (e) {
-					heatTile = 0; //Before the database updates, render a cold tile
-				}
+				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
+					
 				ctx.globalAlpha = 1;
 				ctx.fillStyle = "#FFFFFF";
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
@@ -44,6 +45,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 			}
 
 			if (tiles[y][x].type === "road") {
+				roads++;
 				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
 				tile += x > 0 && tiles[y][x - 1].type === "road";
@@ -55,7 +57,34 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 				tile += 8 * (y < tiles.length - 1 && tiles[y + 1][x].type === "road");
 				tile += 8 * (y > tiles.length - 2);
 				tile += buildingsConfig["road"].sprite.y * 16; //y offset
-			} else {
+
+				let traffic = 0;
+				try {
+					const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
+					traffic = heatMap[0] + heatMap[1] + heatMap[2]; //We only want the RCI values
+				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
+				if (traffic > 20) {
+					busyRoads++
+					tile += 16; //If traffic above some number, use the "busy" road sprites
+				
+				}
+				
+
+
+			} else if (tiles[y][x].type === "pole") {
+				tile += x > 0 && !!tiles[y][x - 1].buildingId;
+				tile += x < 1
+				tile += 2 * (x < tiles[0].length - 1 && !!tiles[y][x + 1].buildingId);
+				tile += 2 * (x > tiles[0].length-2);
+				tile += 4 * (y > 0 && !!tiles[y - 1][x].buildingId);
+				tile += 4 * (y < 1);
+				tile += 8 * (y < tiles.length - 1 && !!tiles[y + 1][x].buildingId);
+				tile += 8 * (y > tiles.length - 2);
+				tile += buildingsConfig["pole"].sprite.y * 16; //y offset
+			}
+			
+			
+			else {
 				tile = tiles[y][x].spriteIndex;
 			}
 			const srcX = (tile % 16) * sourcePx;
@@ -64,6 +93,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx, drawX, drawY, tilePx, tilePx);
 		}
 	}
+	console.log(`${busyRoads} out of ${roads} roads are busy`)
 }
 
 function neighborsMap(ctx, rawTiles, tileset) {

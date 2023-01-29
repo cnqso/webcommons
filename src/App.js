@@ -186,9 +186,8 @@ function App() {
 	// }
 
 	//if (user) {
-		//commonsLogin() or something
-		//Actually, webstorage would be prefferable 
-
+	//commonsLogin() or something
+	//Actually, webstorage would be prefferable
 
 	const signInWithGoogle = () => {
 		const provider = new GoogleAuthProvider();
@@ -216,9 +215,8 @@ function App() {
 			return;
 		}
 
-		newUserRequest("POST", auth.currentUser.uid, userName)
-
-	};
+		newUserRequest("POST", auth.currentUser.uid, userName);
+	}
 
 	const newUser = () => {
 		const userName = userNameInput.current.value;
@@ -279,25 +277,22 @@ function App() {
 		//set user data
 	};
 
-
-
-
 	function newUserRequest(method, userId, folder) {
 		const url = "http://localhost:8080/newUser";
 		const body = JSON.stringify({
 			folder: folder,
-			id: userId
+			id: userId,
 		});
 		const xhr = new XMLHttpRequest();
 		xhr.withCredentials = false;
 		xhr.responseType = "text";
-	
+
 		xhr.addEventListener("readystatechange", function () {
 			if (this.readyState === this.DONE) {
 				const response = this.responseText;
 				if (response) {
 					console.log(response);
-					const location = response.split(',');
+					const location = response.split(",");
 					setOpen(false);
 					commonsLogin({ location: [location[1], location[2]], money: 0, userName: body.id });
 					return response;
@@ -321,6 +316,10 @@ function App() {
 
 	return (
 		<div className='App'>
+			<link
+				rel='stylesheet'
+				href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap'
+			/>
 			<Dialog open={open} onClose={signOut}>
 				<DialogContent>
 					<DialogContentText>Choose a new userName</DialogContentText>
@@ -338,7 +337,7 @@ function App() {
 				</DialogActions>
 			</Dialog>
 
-			<NavBar signIn={signInWithGoogle} signOut={signOut} user={loggedIn} />
+			<NavBar signIn={signInWithGoogle} signOut={signOut} user={loggedIn} userName={userData.userName}   />
 
 			<ToggleButtons
 				currentSelection={editSelection}

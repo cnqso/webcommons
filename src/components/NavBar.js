@@ -8,7 +8,7 @@ import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
 import "./NavBar.css";
 
-export default function NavBar({ signIn, signOut, user }) {
+export default function NavBar({ signIn, signOut, user, userName }) {
 	return (
 		<Box className="NavBar" sx={{ flexGrow: 1 }}>
 			<AppBar position="static" style={{ background: "black" }}>
@@ -35,7 +35,7 @@ export default function NavBar({ signIn, signOut, user }) {
 						</Button>
 					) : (
 						<Button color="inherit" onClick={signOut}>
-							Logout
+							{userName}
 						</Button>
 					)}
 				</Toolbar>

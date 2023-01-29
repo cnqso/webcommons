@@ -11,6 +11,8 @@
 }
 .Canvas {
   background-color: #121212;
+  width: 100vw;
+  height: calc(100vh - 64px);
 }
 
 .road {
