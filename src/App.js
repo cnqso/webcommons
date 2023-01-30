@@ -43,7 +43,7 @@ const userLocationsRef = ref(database, "userLocations");
 const userTilesRef = ref(database, "userTiles");
 
 function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
-	const url = "http://localhost:8080/" + handler;
+	const url = "https://us-central1-reactcommons.cloudfunctions.net/expressApi/" + handler;
 	const body = JSON.stringify({
 		folder: folder,
 		id: buildingId,
@@ -278,7 +278,7 @@ function App() {
 	};
 
 	function newUserRequest(method, userId, folder) {
-		const url = "http://localhost:8080/newUser";
+		const url = "https://us-central1-reactcommons.cloudfunctions.net/expressApi/newUser/";
 		const body = JSON.stringify({
 			folder: folder,
 			id: userId,

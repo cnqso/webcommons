@@ -39,9 +39,8 @@ function ToggleButtons(props) {
 	const handleMapChange = (event) => {
 		props.setMapSelection(event.target.value);
 	};
-
 	function sendTickRequest() {
-		props.sendRequest("POST", 0, 0, "tick", 0, 0, "tick");
+		props.sendRequest("POST", 0, 0, "tick", 0, 0, "tick", "tick");
 	}
 
 	const Text = styled("div")(({ theme }) => ({
@@ -94,6 +93,7 @@ function ToggleButtons(props) {
 
 	return (
 		<Paper className='toggleButtons'>
+			<button onClick={sendTickRequest}>tick</button>
 			<ToggleButtonGroup
 				color='primary'
 				value={alignment}
