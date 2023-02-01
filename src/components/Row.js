@@ -32,13 +32,15 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 				let heatTile = 0;
 				try {
 					const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
-					heatTile = heatMap[mapStyle.heatMapIndex];
+					const heatSum = heatMap[0] + heatMap[1] + heatMap[2];
+					const opps = heatSum - heatMap[mapStyle.heatMapIndex];
+					heatTile = heatMap[mapStyle.heatMapIndex] / (opps / 2);
 				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
 					
 				ctx.globalAlpha = 1;
 				ctx.fillStyle = "#FFFFFF";
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
-				ctx.globalAlpha = heatTile;
+				ctx.globalAlpha = heatTile/2;
 				ctx.fillStyle = mapStyle.color;
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
 				continue;
@@ -93,7 +95,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx, drawX, drawY, tilePx, tilePx);
 		}
 	}
-	console.log(`${busyRoads} out of ${roads} roads are busy`)
+	// console.log(`${busyRoads} out of ${roads} roads are busy`)
 }
 
 function neighborsMap(ctx, rawTiles, tileset) {
@@ -165,21 +167,3 @@ function Row({ tiles, mapSelection, lastSnapshot, neighborTiles }) {
 }
 
 export default Row;
-
-// useEffect(() => {
-//   const kanvas = canvas.current;
-//   const ctx = kanvas.getContext('2d');
-//   ctx.fillStyle = "#000000";
-//   ctx.fillRect(0, 0, mapWidth, mapHeight);
-//   for (let y = 0 ; y < tiles.length ; y++) {
-//     for (let x = 0 ; x < tiles[0].length; x++) {
-//       const tile = tiles[y][x].spriteIndex
-//       const buildingType = tiles[y][x].type
-//       ctx.fillStyle=buildingsConfig[buildingType].color;
-//       ctx.fillRect(x*tilePx, y*tilePx, tilePx, tilePx);
-//       const tileRandom = Math.floor(Math.random() * 4);
-//       ctx.drawImage(image, (tile%32)*64, (Math.floor(tile/32))*64, 64, 64, x*tilePx, y*tilePx, tilePx, tilePx);
-//     }
-//   }
-//   console.log("Redrew image")
-// }, [tiles]);

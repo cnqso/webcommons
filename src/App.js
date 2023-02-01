@@ -39,7 +39,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
 const userListRef = ref(database, "userList");
-const userLocationsRef = ref(database, "userLocations");
 const userTilesRef = ref(database, "userTiles");
 
 function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
@@ -76,36 +75,6 @@ function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
 			console.log(error);
 			return error;
 		});
-}
-
-function cnqsoFastSquareSpiral(n) {
-	let dir = 1;
-	let loc = [0, 0];
-	let run = 1;
-	let runi = 0;
-	let i = 0;
-	while (i < n) {
-		runi = run + i;
-		while (i < runi) {
-			loc[0] += dir;
-			i++;
-			if (i >= n) {
-				return loc;
-			}
-		}
-		runi = run + i;
-		while (i < runi) {
-			loc[1] += dir;
-			i++;
-			if (i >= n) {
-				return loc;
-			}
-		}
-
-		run++;
-		dir = dir * -1;
-	}
-	return loc;
 }
 
 function reverseSquareSpiral(coordinates) {
@@ -162,32 +131,16 @@ function App() {
 	};
 	const [neighborTiles, setNeighborTiles] = useState([]);
 
-	//I'd like to implement the code below, but I'm worried about an infinite loop
-
-	// if (!loggedIn && user || loggedIn && !user) {
-	// 	console.log("Preauthenticated user returning")
-	// 	try { get(child(userListRef, user.uid))
-	// 		.then((snapshot) => {
-	// 			if (snapshot.exists()) {
-	// 				commonsLogin(snapshot.val());
-	// 			} else {
-	// 				//Redundancy because an infinite auth loop would be very bad
-	// 				auth.signOut();
-	// 				setLoggedIn(false);
-	// 				signOut();
-	// 			}
-	// 		})
-	// 	} catch (error) {
-	// 		console.log(error);
-	// 		auth.signOut();
-	// 		setLoggedIn(false);
-	// 		signOut();
-	// 	}
-	// }
-
-	//if (user) {
-	//commonsLogin() or something
-	//Actually, webstorage would be prefferable
+	useEffect(() => {
+		if (user && !loggedIn) {
+			get(child(userListRef, user.uid)).then((snapshot) => {
+				if (snapshot.exists()) {
+					console.log("relogging in!")
+					commonsLogin(snapshot.val());
+				}
+			});
+		}
+	}, [user]);
 
 	const signInWithGoogle = () => {
 		const provider = new GoogleAuthProvider();
@@ -218,39 +171,6 @@ function App() {
 		newUserRequest("POST", auth.currentUser.uid, userName);
 	}
 
-	const newUser = () => {
-		const userName = userNameInput.current.value;
-		if (userName === "") {
-			signOut();
-			return;
-		}
-		let excessiveDownload = {};
-		get(userListRef).then((snapshot) => {
-			excessiveDownload = snapshot.val();
-			const userListLength = Object.keys(excessiveDownload).length;
-			let newUser = {};
-			// Check if the user already has an account. If so, let them change username but don't let them cheat
-			if (excessiveDownload[auth.currentUser.uid]) {
-				newUser = {
-					userName: userName,
-					location: excessiveDownload[auth.currentUser.uid].location,
-					money: excessiveDownload[auth.currentUser.uid].money,
-				};
-			} else {
-				const [x, y] = cnqsoFastSquareSpiral(userListLength);
-				newUser = { location: [x, y], money: 1000, userName: userName };
-				set(child(userLocationsRef, userListLength.toString()), auth.currentUser.uid);
-			}
-			try {
-				set(child(userListRef, auth.currentUser.uid), newUser);
-				setOpen(false);
-				commonsLogin(newUser);
-			} catch (error) {
-				signOut();
-			}
-		});
-	};
-
 	const commonsLogin = ({ location, money, userName }) => {
 		setUserData({ location, money, userName });
 		console.log(`Logging in ${userName} - uid ${auth.currentUser.uid} - at ${location} with $${money}`);
@@ -268,13 +188,7 @@ function App() {
 			});
 		}
 		setNeighborTiles(surroundingTiles);
-		//setSurroundingTiles state to surroundingTiles
-
 		setLoggedIn(true);
-
-		//Switch map to user's
-		//grab the tiles from neighbors
-		//set user data
 	};
 
 	function newUserRequest(method, userId, folder) {
@@ -294,7 +208,7 @@ function App() {
 					console.log(response);
 					const location = response.split(",");
 					setOpen(false);
-					commonsLogin({ location: [location[1], location[2]], money: 0, userName: body.id });
+					commonsLogin({ location: [location[1], location[2]], money: 1000, userName: body.id });
 					return response;
 				}
 			}
@@ -338,7 +252,8 @@ function App() {
 			</Dialog>
 
 			<NavBar signIn={signInWithGoogle} signOut={signOut} user={loggedIn} userName={userData.userName}   />
-
+			{loggedIn ? (
+				<>
 			<ToggleButtons
 				currentSelection={editSelection}
 				setEditSelection={setEditSelection}
@@ -347,7 +262,7 @@ function App() {
 				sendRequest={sendRequest}
 				userData={userData}
 			/>
-			{loggedIn ? (
+			
 				<Canvas
 					key={mapDataLocation}
 					editSelection={editSelection}
@@ -357,7 +272,7 @@ function App() {
 					neighborTiles={neighborTiles}
 					userData={userData}
 					setUserData={setUserData}
-				/>
+				/></>
 			) : null}
 		</div>
 	);
