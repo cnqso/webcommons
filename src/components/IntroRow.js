@@ -12,14 +12,13 @@ const mapHeight = config.TILE_HEIGHT * tilePx;
 const sourcePx = config.TILEMAP_SQUARE;
 const mapStyles = config.MAP_STYLES;
 
+
+//A version of row that renders a static set of tiles. Used for the intro screen
+//Doesn't have to be feasible, make it look aesthetic asf
+
 function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 	let roads = 0; //Used for debugging
 	let busyRoads = 0;
-
-	ctx.clearRect(0, 0, mapWidth, mapHeight);
-	//Draw a background
-	ctx.fillStyle = "#000000";
-	ctx.fillRect(mapWidth, mapHeight, mapWidth, mapHeight);
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;

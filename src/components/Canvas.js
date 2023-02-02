@@ -86,7 +86,7 @@ const Canvas = ({
 		}
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
-				if (lastSnapshot.current[tiles[i][j].buildingId]) {
+				if (tiles[i][j].type !== "empty") {
 					console.log("Space already occupied");
 					return false;
 				}
@@ -179,7 +179,9 @@ const Canvas = ({
 			editMap(adjustedX, adjustedY);
 		}
 	};
-
+	//This function is in charge of keeping the map in sync with the database
+	//In the current configuration, this is largely uncessary.
+	//However, it prevents many potential bugs and would be useful if I ever redesign the game
 	useEffect(() => {
 		onValue(buildingsRef, (snapshot) => {
 			const data = snapshot.val();
