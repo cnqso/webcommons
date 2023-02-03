@@ -18,6 +18,19 @@
     transition: background-color 0.5s;
 }
 
+.welcome {
+    margin-top: 10px;
+    z-index: 5;
+    position:fixed;
+    width: 70vw;
+     margin-left: 15vw;
+    background-color: #ffffff;
+    text-align: center;
+    color: #32CD32;
+    font-size: 13vw;
+
+    }
+
 @media (max-width: 600px) {
     .toggleButtons {
         background-color: rgba(255, 255, 255, 1);

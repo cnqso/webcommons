@@ -5,21 +5,24 @@ import { styled } from "@mui/material/styles";
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Paper from "@mui/material/Paper";
-import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import SvgIcon from "@mui/material/SvgIcon";
-import { pink } from "@mui/material/colors";
-import FactoryIcon from "@mui/icons-material/Factory";
-import StoreIcon from "@mui/icons-material/Store";
-import HouseIcon from "@mui/icons-material/House";
-import PanoramaIcon from "@mui/icons-material/Panorama";
-import LocationCityIcon from "@mui/icons-material/LocationCity";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Tooltip from "@mui/material/Tooltip";
 import "./ToggleButtons.css";
+import {
+	AboutIcon,
+	BulldozeIcon,
+	CityIcon,
+	CommercialIcon,
+	IndustrialIcon,
+	NuclearIcon,
+	PoleIcon,
+	ResidentialIcon,
+	RoadIcon,
+} from "./icons";
 
 function ToggleButtons(props) {
 	const [map, setMap] = useState("city");
@@ -59,15 +62,21 @@ function ToggleButtons(props) {
 		let maxWidth = 70;
 		let maxHeight = 40;
 		if (!matches) {
-			label = "Map"
+			label = "Map";
 			maxWidth = 70;
 			maxHeight = 70;
 		}
 		return (
-			<FormControl sx={{ m: (!matches), maxHeight: maxHeight, maxWidth: maxWidth, pt: (!matches) }} size='small'>
-				{matches ? <InputLabel/> : <InputLabel id='map-select' sx={{ mt: 1 }}>
-					Map
-				</InputLabel>}
+			<FormControl
+				sx={{ m: !matches, maxHeight: maxHeight, maxWidth: maxWidth, pt: !matches }}
+				size='small'>
+				{matches ? (
+					<InputLabel />
+				) : (
+					<InputLabel id='map-select' sx={{ mt: 1 }}>
+						Map
+					</InputLabel>
+				)}
 				<Select
 					labelId='map-select'
 					id='map-select'
@@ -75,16 +84,16 @@ function ToggleButtons(props) {
 					label={label}
 					onChange={handleMapChange}>
 					<MenuItem value={"city"}>
-						<LocationCityIcon />
+						<CityIcon />
 					</MenuItem>
 					<MenuItem value={"resDemand"}>
-						<HouseIcon />
+						<ResidentialIcon />
 					</MenuItem>
 					<MenuItem value={"indDemand"}>
-						<FactoryIcon />
+						<IndustrialIcon />{" "}
 					</MenuItem>
 					<MenuItem value={"comDemand"}>
-						<StoreIcon />
+						<CommercialIcon />
 					</MenuItem>
 				</Select>
 			</FormControl>
@@ -93,99 +102,86 @@ function ToggleButtons(props) {
 
 	return (
 		<Paper className='toggleButtons'>
-			<button onClick={sendTickRequest}>tick</button>
+			{matches ? <button onClick={sendTickRequest}>tick</button> : null}
 			<ToggleButtonGroup
 				color='primary'
 				value={alignment}
 				exclusive
 				onChange={handleChange}
 				aria-label='Platform'
-				orientation={orientation}
-				
-				>
-          {matches ? 
-				<Text variant='outlined' square sx={{ borderRadius: 1 }}>
-					<h2 style={{ margin: 3, padding: 0 }}>${props.userData.money}</h2>
-				</Text> : null}
+				orientation={orientation}>
+				{matches ? (
+					<Text variant='outlined' square sx={{ borderRadius: 1 }}>
+						<h2 style={{ margin: 3, padding: 0 }}>${props.userData.money}</h2>
+					</Text>
+				) : null}
 				<ToggleButton value='road'>
 					{matches ? (
 						"Road"
 					) : (
-						<Tooltip title='Road'>
-							<LocationCityIcon />
-						</Tooltip>
+							<RoadIcon />
 					)}
 				</ToggleButton>
 				<ToggleButton value='pole'>
 					{matches ? (
 						"Pole"
 					) : (
-						<Tooltip title='Pole'>
-							<LocationCityIcon />
-						</Tooltip>
+							<PoleIcon />
 					)}
 				</ToggleButton>
 				<ToggleButton value='residential'>
 					{matches ? (
 						"Residential"
 					) : (
-						<Tooltip title='Residential'>
-							<LocationCityIcon />
-						</Tooltip>
+							<ResidentialIcon />
 					)}
 				</ToggleButton>
 				<ToggleButton value='commercial'>
 					{matches ? (
 						"Commercial"
 					) : (
-						<Tooltip title='Commercial'>
-							<LocationCityIcon />
-						</Tooltip>
+							<CommercialIcon />
 					)}{" "}
 				</ToggleButton>
 				<ToggleButton value='industrial'>
 					{matches ? (
 						"Industrial"
 					) : (
-						<Tooltip title='Industrial'>
-							<LocationCityIcon />
-						</Tooltip>
+							<IndustrialIcon />
 					)}
 				</ToggleButton>
 				<ToggleButton value='coal'>
 					{matches ? (
 						"Coal"
 					) : (
-						<Tooltip title='Coal'>
-							<LocationCityIcon />
-						</Tooltip>
+							<NuclearIcon />
 					)}
 				</ToggleButton>
 				<ToggleButton value='delete'>
 					{matches ? (
 						"Bulldoze"
 					) : (
-						<Tooltip title='Bulldoze'>
-							<LocationCityIcon />
-						</Tooltip>
+							<BulldozeIcon />
 					)}
 				</ToggleButton>
 				<ToggleButton value='info'>
 					{matches ? (
 						"Info"
 					) : (
-						<Tooltip title='Info'>
-							<LocationCityIcon />
-						</Tooltip>
+							<AboutIcon />
 					)}
 				</ToggleButton>
 				{matches ? MapSelection() : null}
 			</ToggleButtonGroup>
 			<br />
-			{matches ? null : <>
-			<MapSelection/> 	<Text sx={{ display: "inline-block", p:0, m:"auto", align:"center", left:5}}>
-					<h2 style={{margin: 10}} >${props.userData.money}</h2>
-				</Text> </>}
+			{matches ? null : (
+				<>
+					<MapSelection />{" "}
+					<Text sx={{ display: "inline-block", p: 0, m: "auto", align: "center", left: 5 }}>
+						<h2 style={{ margin: 10 }}>${props.userData.money}</h2>
+					</Text>{" "}
+				</>
+			)}
 		</Paper>
 	);
 }

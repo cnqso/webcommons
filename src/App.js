@@ -1,13 +1,16 @@
 /** @format */
 
 import React, { useRef, useState, useEffect } from "react";
-import ReactDOM from "react-dom";
 import "./App.css";
 import ToggleButtons from "./components/ToggleButtons";
 import Canvas from "./components/Canvas";
 import config from "./components/config";
 import NavBar from "./components/NavBar";
 import emptyPlot from "./rawTiles.json";
+import Row from "./components/Row";
+import {Space} from "react-zoomable-ui";
+import introTiles from "./components/introTiles.json";
+import Welcome from "./components/Welcome";
 
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
@@ -132,13 +135,18 @@ function App() {
 		editSelection.current = value;
 	};
 	const [neighborTiles, setNeighborTiles] = useState([]);
-
+	let TILE_PIXELS = config.TILE_PIXELS;
+	if (isComputer) {
+		TILE_PIXELS = TILE_PIXELS * 2;
+	}
+	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
+	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 
 	useEffect(() => {
 		if (user && !loggedIn) {
 			get(child(userListRef, user.uid)).then((snapshot) => {
 				if (snapshot.exists()) {
-					console.log("relogging in!")
+					console.log("relogging in!");
 					commonsLogin(snapshot.val());
 				}
 			});
@@ -254,30 +262,72 @@ function App() {
 				</DialogActions>
 			</Dialog>
 
-			<NavBar signIn={signInWithGoogle} signOut={signOut} user={loggedIn} userName={userData.userName}   />
+			<NavBar
+				signIn={signInWithGoogle}
+				signOut={signOut}
+				user={loggedIn}
+				userName={userData.userName}
+			/>
 			{loggedIn ? (
 				<>
-			<ToggleButtons
-				currentSelection={editSelection}
-				setEditSelection={setEditSelection}
-				mapSelection={mapSelection}
-				setMapSelection={setMapSelection}
-				sendRequest={sendRequest}
-				userData={userData}
-			/>
-			
-				<Canvas
-					key={mapDataLocation}
-					editSelection={editSelection}
-					mapSelection={mapSelection}
-					sendRequest={sendRequest}
-					mapDataLocation={mapDataLocation}
-					neighborTiles={neighborTiles}
-					userData={userData}
-					setUserData={setUserData}
-					isComputer={isComputer}
-				/></>
-			) : null}
+					<ToggleButtons
+						currentSelection={editSelection}
+						setEditSelection={setEditSelection}
+						mapSelection={mapSelection}
+						setMapSelection={setMapSelection}
+						sendRequest={sendRequest}
+						userData={userData}
+					/>
+
+					<Canvas
+						key={mapDataLocation}
+						editSelection={editSelection}
+						mapSelection={mapSelection}
+						sendRequest={sendRequest}
+						mapDataLocation={mapDataLocation}
+						neighborTiles={neighborTiles}
+						userData={userData}
+						setUserData={setUserData}
+						TILE_PIXELS={TILE_PIXELS}
+					/>
+				</>
+			) : (
+				<>
+				
+				<div
+					className='Canvas'
+					style={{
+						position: "relative",
+					}}>
+						<Welcome/>
+					<Space
+						style={{ border: "solid 1px black" }}
+						onCreate={(viewPort) => {
+							viewPort.setBounds({
+								x: [mapWidth * -1, mapWidth * 4],
+								y: [mapHeight * -1, mapHeight * 4],
+							});
+							viewPort.camera.centerFitAreaIntoView({
+								left: mapWidth * 1.2,
+								top: mapHeight * 1.2,
+								width: 1000,
+								height: 1000,
+							});
+						}}>
+							<Row
+								key={"Intro"}
+								tiles={introTiles[0]}
+								mapSelection={mapSelection}
+								lastSnapshot={null}
+								neighborTiles={introTiles}
+								editSelection={editSelection}
+								TILE_PIXELS={TILE_PIXELS}
+								loggedIn={false}
+							/>
+					</Space>
+				</div>
+				</>
+			)}
 		</div>
 	);
 }

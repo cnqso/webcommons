@@ -97,7 +97,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 	// console.log(`${busyRoads} out of ${roads} roads are busy`)
 }
 
-function neighborsMap(ctx, rawTiles, tileset, tilePx) {
+function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 	
 	const w = config.TILE_WIDTH;
 	const h = config.TILE_HEIGHT;
@@ -111,6 +111,10 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx) {
 		[w, 0],
 		[2 * w, 0],
 	];
+	if (!loggedIn) {
+		offsets.splice(4, 0, [w, h])
+		rawTiles.push(rawTiles[4])
+	}
 
 	let tile = 0;
 	for (let i = 0; i < rawTiles.length; i++) {
@@ -140,14 +144,16 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx) {
 		}
 	}
 	//Borders
+	if (loggedIn) {
 	ctx.fillStyle = "#000000";
 	ctx.fillRect(w * tilePx - 10, 0, 10, 3 * h * tilePx);
 	ctx.fillRect(2 * w * tilePx, 0, 10, 3 * h * tilePx);
 	ctx.fillRect(0, h * tilePx - 10, 3 * w * tilePx, 10);
 	ctx.fillRect(0, 2 * h * tilePx, 3 * w * tilePx, 10);
+	}
 }
 
-function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, TILE_PIXELS }) {
+function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, TILE_PIXELS, loggedIn}) {
 	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 	const tileset = new Image();
@@ -159,8 +165,10 @@ function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, 
 	useEffect(() => {
 		tileset.onload = () => {
 			const ctx = canvas.current.getContext("2d");
-			neighborsMap(ctx, neighborTiles, tileset, TILE_PIXELS, mapWidth, mapHeight);
+			neighborsMap(ctx, neighborTiles, tileset, TILE_PIXELS, loggedIn, mapWidth, mapHeight);
+			if (loggedIn) {
 			playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, TILE_PIXELS);
+			}
 		};
 		console.log("Rendered");
 	}, [tiles, mapSelection]);

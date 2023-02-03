@@ -58,12 +58,9 @@ const Canvas = ({
 	neighborTiles,
 	userData,
 	setUserData,
-	isComputer
+	TILE_PIXELS
 }) => {
-	let TILE_PIXELS = config.TILE_PIXELS;
-	if (isComputer) {
-		TILE_PIXELS = TILE_PIXELS * 2;
-	}
+
 	const buildingsRef = ref(db, mapDataLocation);
 	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
@@ -296,6 +293,7 @@ const Canvas = ({
 						neighborTiles={neighborTiles}
 						editSelection={editSelection}
 						TILE_PIXELS={TILE_PIXELS}
+						loggedIn={true}
 					/>
 				</Pressable>
 			</Space>

@@ -8,6 +8,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
+import {LogOutIcon, AboutIcon, QuestionIcon, SunMoonIcon} from "./icons";
 import "./NavBar.css";
 
 import Drawer from "@mui/material/Drawer";
@@ -16,7 +17,6 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
 import Switch from "@mui/material/Switch";
 import Modal from "@mui/material/Modal";
 
@@ -55,7 +55,7 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 			<List>
 				<ListItem>
 					<ListItemIcon>
-						<InboxIcon />
+						<SunMoonIcon />
 					</ListItemIcon>
 					<ListItemText id='switch-list-label-nightmode' primary='NIGHT MODE' />
 					<Switch
@@ -70,7 +70,7 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 				<ListItem key={"HOW TO"} disablePadding>
 					<ListItemButton onClick={handleHowToOpen}>
 						<ListItemIcon>
-							<InboxIcon />
+							<QuestionIcon />
 						</ListItemIcon>
 						<ListItemText primary={"HOW TO"} />
 					</ListItemButton>
@@ -79,7 +79,7 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 				<ListItem key={"ABOUT"} disablePadding>
 					<ListItemButton onClick={handleAboutOpen}>
 						<ListItemIcon>
-							<InboxIcon />
+							<AboutIcon />
 						</ListItemIcon>
 						<ListItemText primary={"ABOUT"} />
 					</ListItemButton>
@@ -88,7 +88,7 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 					<ListItem key={"LOGOUT"} disablePadding>
 						<ListItemButton onClick={signOut}>
 							<ListItemIcon>
-								<InboxIcon />
+								<LogOutIcon />
 							</ListItemIcon>
 							<ListItemText primary={"LOGOUT"} />
 						</ListItemButton>
