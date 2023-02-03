@@ -22,6 +22,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
 import { useAuthState } from "react-firebase-hooks/auth";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
@@ -126,10 +127,12 @@ function App() {
 	const [mapDataLocation, setMapDataLocation] = useState("buildings");
 	const [loggedIn, setLoggedIn] = useState(false);
 	const editSelection = useRef("road");
+	const isComputer = useMediaQuery("(min-width:600px)");
 	const setEditSelection = (value) => {
 		editSelection.current = value;
 	};
 	const [neighborTiles, setNeighborTiles] = useState([]);
+
 
 	useEffect(() => {
 		if (user && !loggedIn) {
@@ -272,6 +275,7 @@ function App() {
 					neighborTiles={neighborTiles}
 					userData={userData}
 					setUserData={setUserData}
+					isComputer={isComputer}
 				/></>
 			) : null}
 		</div>

@@ -36,10 +36,10 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 	const [aboutOpen, setAboutOpen] = useState(false);
 	const [howToOpen, setHowToOpen] = useState(false);
 	const [nightMode, setNightMode] = useState(false);
-	const [state, setState] = useState("closed");
+	const [drawer, setDrawer] = useState(false);
 
 	const toggleDrawer = (open) => (event) => {
-		setState({ ...state, 'left': open });
+		setDrawer(!drawer);
 	};
 	const onNightMode = () => setNightMode(!nightMode);
 	const handleAboutOpen = () => setAboutOpen(true);
@@ -100,7 +100,7 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 
 	return (
 		<Box className='NavBar' sx={{ flexGrow: 1 }}>
-			<Drawer anchor={"left"} open={state["left"]} onClose={toggleDrawer(false)}>
+			<Drawer anchor={"left"} open={drawer} onClose={toggleDrawer(false)}>
 				{list("left")}
 			</Drawer>
 			<Modal open={aboutOpen} onClose={handleAboutClose} aria-labelledby='modal-about'>

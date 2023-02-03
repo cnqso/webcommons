@@ -4,7 +4,7 @@ const config = {
     TILE_HEIGHT: 40,
 
     //Tile config
-    TILE_PIXELS: 64,
+    TILE_PIXELS: 32,
     TILEMAP_SQUARE: 64,
     X_ERROR: 0.01,
 	Y_ERROR: 0.01,

@@ -58,10 +58,15 @@ const Canvas = ({
 	neighborTiles,
 	userData,
 	setUserData,
+	isComputer
 }) => {
+	let TILE_PIXELS = config.TILE_PIXELS;
+	if (isComputer) {
+		TILE_PIXELS = TILE_PIXELS * 2;
+	}
 	const buildingsRef = ref(db, mapDataLocation);
-	const mapWidth = config.TILE_WIDTH * config.TILE_PIXELS;
-	const mapHeight = config.TILE_HEIGHT * config.TILE_PIXELS;
+	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
+	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 
 	const clickxy = useRef([0, 0]);
 	const [tiles, setTiles] = useState(jsonTiles);
@@ -171,9 +176,9 @@ const Canvas = ({
 
 	const handleOnClick = (coordinates) => {
 		const adjustedX =
-			Math.floor((coordinates[0] + config.X_ERROR) / config.TILE_PIXELS) - config.TILE_WIDTH;
+			Math.floor((coordinates[0] + config.X_ERROR) / TILE_PIXELS) - config.TILE_WIDTH;
 		const adjustedY =
-			Math.floor((coordinates[1] + config.Y_ERROR) / config.TILE_PIXELS) - config.TILE_HEIGHT;
+			Math.floor((coordinates[1] + config.Y_ERROR) / TILE_PIXELS) - config.TILE_HEIGHT;
 
 		if ("authentication" !== "placeholder") {
 			editMap(adjustedX, adjustedY);
@@ -289,6 +294,8 @@ const Canvas = ({
 						mapSelection={mapSelection}
 						lastSnapshot={lastSnapshot}
 						neighborTiles={neighborTiles}
+						editSelection={editSelection}
+						TILE_PIXELS={TILE_PIXELS}
 					/>
 				</Pressable>
 			</Space>

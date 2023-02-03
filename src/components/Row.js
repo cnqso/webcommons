@@ -6,20 +6,14 @@ import config from "./config";
 import buildingsConfig from "./buildingsConfig.json";
 import spritemap from "./tileset.png";
 
-const tilePx = config.TILE_PIXELS;
-const mapWidth = config.TILE_WIDTH * tilePx;
-const mapHeight = config.TILE_HEIGHT * tilePx;
+
+
 const sourcePx = config.TILEMAP_SQUARE;
 const mapStyles = config.MAP_STYLES;
 
-function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
+function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWidth, mapHeight) {
 	let roads = 0; //Used for debugging
 	let busyRoads = 0;
-
-	ctx.clearRect(0, 0, mapWidth, mapHeight);
-	//Draw a background
-	ctx.fillStyle = "#000000";
-	ctx.fillRect(mapWidth, mapHeight, mapWidth, mapHeight);
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;
@@ -103,7 +97,8 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot) {
 	// console.log(`${busyRoads} out of ${roads} roads are busy`)
 }
 
-function neighborsMap(ctx, rawTiles, tileset) {
+function neighborsMap(ctx, rawTiles, tileset, tilePx) {
+	
 	const w = config.TILE_WIDTH;
 	const h = config.TILE_HEIGHT;
 	const offsets = [
@@ -152,7 +147,9 @@ function neighborsMap(ctx, rawTiles, tileset) {
 	ctx.fillRect(0, 2 * h * tilePx, 3 * w * tilePx, 10);
 }
 
-function Row({ tiles, mapSelection, lastSnapshot, neighborTiles }) {
+function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, TILE_PIXELS }) {
+	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
+	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 	const tileset = new Image();
 	tileset.src = spritemap;
 	//The spritemap is 32 by 32, each sprite is 64 pixels wide and tall
@@ -162,8 +159,8 @@ function Row({ tiles, mapSelection, lastSnapshot, neighborTiles }) {
 	useEffect(() => {
 		tileset.onload = () => {
 			const ctx = canvas.current.getContext("2d");
-			neighborsMap(ctx, neighborTiles, tileset);
-			playMap(ctx, tiles, tileset, mapSelection, lastSnapshot);
+			neighborsMap(ctx, neighborTiles, tileset, TILE_PIXELS, mapWidth, mapHeight);
+			playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, TILE_PIXELS);
 		};
 		console.log("Rendered");
 	}, [tiles, mapSelection]);
