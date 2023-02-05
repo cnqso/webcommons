@@ -3,9 +3,6 @@
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
-    background-color: rgba(255, 255, 255, 0.7);
-    transition: background-color 0.5s;
-    color: #ffffff;
     margin-top: 10px;
     z-index: 5;
     position:fixed;
@@ -13,33 +10,31 @@
     
 }
 
-.toggleButtons:hover {
-    background-color: rgba(255, 255, 255, 1); 
-    transition: background-color 0.5s;
+.MuiToggleButton-root {
+    display: flex !important;
+    margin-top:4px;
 }
 
 .welcome {
     margin-top: 10px;
     z-index: 5;
     position:fixed;
-    width: 70vw;
-     margin-left: 15vw;
-    background-color: #ffffff;
+    width: 78vw;
+    margin-left: 11vw;
     text-align: center;
-    color: #32CD32;
     font-size: 13vw;
 
     }
 
 @media (max-width: 600px) {
     .toggleButtons {
-        background-color: rgba(255, 255, 255, 1);
-        max-width: 100vw;
+        width: 100vw;
         margin-top:4px;
         left:0px;
         align-items: center;
     }
-    .toggleButtons:hover {
-        background-color: rgba(255, 255, 255, 1);
+    .MuiToggleButton-root {
+        width: 13vw !important;
+        padding: 0px;
     }
 }

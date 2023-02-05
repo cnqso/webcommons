@@ -267,7 +267,6 @@ const Canvas = ({
 				onDecideHowToHandlePress={(e, coords) => {
 					clickxy.current = [coords.x, coords.y, coords.clientX, coords.clientY]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
 				}}
-				style={{ border: "solid 1px black" }}
 				onCreate={(viewPort) => {
 					viewPort.setBounds({
 						x: [mapWidth * -1, mapWidth * 4],

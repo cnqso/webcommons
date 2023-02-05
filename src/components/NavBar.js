@@ -32,16 +32,15 @@ const modalStyle = {
 	p: 4,
 };
 
-export default function NavBar({ signIn, signOut, user, userName }) {
+export default function NavBar({ signIn, signOut, user, userName, darkMode, setDarkMode }) {
 	const [aboutOpen, setAboutOpen] = useState(false);
 	const [howToOpen, setHowToOpen] = useState(false);
-	const [nightMode, setNightMode] = useState(false);
 	const [drawer, setDrawer] = useState(false);
 
 	const toggleDrawer = (open) => (event) => {
 		setDrawer(!drawer);
 	};
-	const onNightMode = () => setNightMode(!nightMode);
+	const onDarkMode = () => setDarkMode(!darkMode);
 	const handleAboutOpen = () => setAboutOpen(true);
 	const handleAboutClose = () => setAboutOpen(false);
 	const handleHowToOpen = () => setHowToOpen(true);
@@ -57,13 +56,14 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 					<ListItemIcon>
 						<SunMoonIcon />
 					</ListItemIcon>
-					<ListItemText id='switch-list-label-nightmode' primary='NIGHT MODE' />
+					<ListItemText id='switch-list-label-Darkmode' primary='DARKMODE' />
 					<Switch
+						color="primary"
 						edge='end'
-						onChange={onNightMode}
-						checked={nightMode}
+						onChange={onDarkMode}
+						checked={darkMode}
 						inputProps={{
-							"aria-labelledby": "switch-list-label-nightmode",
+							"aria-labelledby": "switch-list-label-darkmode",
 						}}
 					/>
 				</ListItem>
@@ -125,7 +125,7 @@ export default function NavBar({ signIn, signOut, user, userName }) {
 					</Typography>
 				</Box>
 			</Modal>
-			<AppBar position='static' style={{ background: "black" }}>
+			<AppBar position='static' sx={{color: 'appBarText', backgroundColor: 'appBar'}} >
 				<Toolbar>
 					<IconButton
 						size='large'

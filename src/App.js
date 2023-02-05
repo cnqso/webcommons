@@ -8,7 +8,7 @@ import config from "./components/config";
 import NavBar from "./components/NavBar";
 import emptyPlot from "./rawTiles.json";
 import Row from "./components/Row";
-import {Space} from "react-zoomable-ui";
+import { Space } from "react-zoomable-ui";
 import introTiles from "./components/introTiles.json";
 import Welcome from "./components/Welcome";
 
@@ -19,6 +19,8 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { CssBaseline } from "@mui/material";
 
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
@@ -121,6 +123,35 @@ function reverseSquareSpiral(coordinates) {
 	}
 }
 
+const darkTheme = createTheme({
+	palette: {
+		mode: "dark",
+		primary: {
+			main: "#aafdc6",
+		},
+		background: {
+			default: "#181818",
+		},
+		appBar: '#121212',
+		appBarText: '#fff',
+	},
+
+});
+
+const lightTheme = createTheme({
+	palette: {
+	  mode: 'light',
+	  primary: {
+		main: "#32CD32",
+	},
+	  background: {
+		default: "#ccffdd",
+	},
+	  appBar: 'paleGreen',
+	  appBarText: 'black',
+	},
+  });
+
 function App() {
 	const [user] = useAuthState(auth);
 	const [mapSelection, setMapSelection] = useState("city");
@@ -129,6 +160,7 @@ function App() {
 	const [open, setOpen] = useState(false);
 	const [mapDataLocation, setMapDataLocation] = useState("buildings");
 	const [loggedIn, setLoggedIn] = useState(false);
+	const [darkMode, setDarkMode] = useState(false);
 	const editSelection = useRef("road");
 	const isComputer = useMediaQuery("(min-width:600px)");
 	const setEditSelection = (value) => {
@@ -141,6 +173,10 @@ function App() {
 	}
 	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
+	let theme = lightTheme;
+	if (darkMode) {
+		theme = darkTheme;
+	}
 
 	useEffect(() => {
 		if (user && !loggedIn) {
@@ -200,6 +236,12 @@ function App() {
 		}
 		setNeighborTiles(surroundingTiles);
 		setLoggedIn(true);
+		// setMapSelection("city")
+		// setMapSelection("resDemand")
+		// setTimeout(() => {
+		// 	console.log("setting map selection to city")
+		// 	setMapSelection("city")
+		// }, 200);
 	};
 
 	function newUserRequest(method, userId, folder) {
@@ -240,95 +282,101 @@ function App() {
 	}
 
 	return (
-		<div className='App'>
+		<ThemeProvider theme={theme}>
+		<div className='App' style={{backgroundColor: theme.palette.background.default}}>
 			<link
 				rel='stylesheet'
 				href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap'
 			/>
-			<Dialog open={open} onClose={signOut}>
-				<DialogContent>
-					<DialogContentText>Choose a new userName</DialogContentText>
-					<TextField
-						inputRef={userNameInput}
-						autoFocus
-						id='commonsuserName'
-						label='userName'
-						variant='standard'
-					/>
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={signOut}>Cancel</Button>
-					<Button onClick={handleNewUser}>Start</Button>
-				</DialogActions>
-			</Dialog>
+		
+				<CssBaseline />
+				<Dialog open={open} onClose={signOut}>
+					<DialogContent>
+						<DialogContentText>Choose a new userName</DialogContentText>
+						<TextField
+							inputRef={userNameInput}
+							autoFocus
+							id='commonsuserName'
+							label='userName'
+							variant='standard'
+						/>
+					</DialogContent>
+					<DialogActions>
+						<Button onClick={signOut}>Cancel</Button>
+						<Button onClick={handleNewUser}>Start</Button>
+					</DialogActions>
+				</Dialog>
 
-			<NavBar
-				signIn={signInWithGoogle}
-				signOut={signOut}
-				user={loggedIn}
-				userName={userData.userName}
-			/>
-			{loggedIn ? (
-				<>
-					<ToggleButtons
-						currentSelection={editSelection}
-						setEditSelection={setEditSelection}
-						mapSelection={mapSelection}
-						setMapSelection={setMapSelection}
-						sendRequest={sendRequest}
-						userData={userData}
-					/>
+				<NavBar
+					signIn={signInWithGoogle}
+					signOut={signOut}
+					user={loggedIn}
+					userName={userData.userName}
+					darkMode={darkMode}
+					setDarkMode={setDarkMode}
+				/>
+				{loggedIn ? (
+					<>
+						<ToggleButtons
+							currentSelection={editSelection}
+							setEditSelection={setEditSelection}
+							mapSelection={mapSelection}
+							setMapSelection={setMapSelection}
+							sendRequest={sendRequest}
+							userData={userData}
+							theme={theme}
+						/>
 
-					<Canvas
-						key={mapDataLocation}
-						editSelection={editSelection}
-						mapSelection={mapSelection}
-						sendRequest={sendRequest}
-						mapDataLocation={mapDataLocation}
-						neighborTiles={neighborTiles}
-						userData={userData}
-						setUserData={setUserData}
-						TILE_PIXELS={TILE_PIXELS}
-					/>
-				</>
-			) : (
-				<>
-				
-				<div
-					className='Canvas'
-					style={{
-						position: "relative",
-					}}>
-						<Welcome/>
-					<Space
-						style={{ border: "solid 1px black" }}
-						onCreate={(viewPort) => {
-							viewPort.setBounds({
-								x: [mapWidth * -1, mapWidth * 4],
-								y: [mapHeight * -1, mapHeight * 4],
-							});
-							viewPort.camera.centerFitAreaIntoView({
-								left: mapWidth * 1.2,
-								top: mapHeight * 1.2,
-								width: 1000,
-								height: 1000,
-							});
-						}}>
-							<Row
-								key={"Intro"}
-								tiles={introTiles[0]}
-								mapSelection={mapSelection}
-								lastSnapshot={null}
-								neighborTiles={introTiles}
-								editSelection={editSelection}
-								TILE_PIXELS={TILE_PIXELS}
-								loggedIn={false}
-							/>
-					</Space>
-				</div>
-				</>
-			)}
+						<Canvas
+							key={mapDataLocation}
+							editSelection={editSelection}
+							mapSelection={mapSelection}
+							sendRequest={sendRequest}
+							mapDataLocation={mapDataLocation}
+							neighborTiles={neighborTiles}
+							userData={userData}
+							setUserData={setUserData}
+							TILE_PIXELS={TILE_PIXELS}
+						/>
+					</>
+				) : (
+					<>
+						<div
+							className='Canvas'
+							style={{
+								position: "relative",
+							}}>
+							<Welcome />
+							<Space
+								style={{ border: "solid 1px black" }}
+								onCreate={(viewPort) => {
+									viewPort.setBounds({
+										x: [mapWidth * -1, mapWidth * 4],
+										y: [mapHeight * -1, mapHeight * 4],
+									});
+									viewPort.camera.centerFitAreaIntoView({
+										left: mapWidth * 1.2,
+										top: mapHeight * 1.2,
+										width: 1000,
+										height: 1000,
+									});
+								}}>
+								<Row
+									key={"Intro"}
+									tiles={introTiles[0]}
+									mapSelection={mapSelection}
+									lastSnapshot={null}
+									neighborTiles={introTiles}
+									editSelection={editSelection}
+									TILE_PIXELS={TILE_PIXELS}
+									loggedIn={false}
+								/>
+							</Space>
+						</div>
+					</>
+				)}
 		</div>
+			</ThemeProvider>
 	);
 }
 

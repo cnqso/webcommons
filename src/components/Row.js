@@ -20,7 +20,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 			const drawY = (y + 40) * tilePx;
 			let tile = 0;
 			//If we are using an alternative mapmode, we don't render buildings as sprites, but as colored rectangles
-			if (mapSelection !== "city" && tiles[y][x].type !== "empty") {
+			if (mapSelection !== "city" && mapSelection !== "loading" && tiles[y][x].type !== "empty") {
 				const mapStyle = mapStyles[mapSelection];
 				if (tiles[y][x].type !== "road") {
 					ctx.globalAlpha = 1;
@@ -64,7 +64,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 					const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
 					traffic = heatMap[0] + heatMap[1] + heatMap[2]; //We only want the RCI values
 				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
-				if (traffic > 20) {
+				if (traffic > 50) {
 					busyRoads++
 					tile += 16; //If traffic above some number, use the "busy" road sprites
 				
@@ -171,7 +171,7 @@ function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, 
 			}
 		};
 		console.log("Rendered");
-	}, [tiles, mapSelection]);
+	}, [tiles, mapSelection, loggedIn, neighborTiles]);
 
 	return <canvas ref={canvas} width={mapWidth * 3} height={mapHeight * 3}></canvas>;
 }

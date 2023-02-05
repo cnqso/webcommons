@@ -25,6 +25,7 @@ import {
 } from "./icons";
 
 function ToggleButtons(props) {
+	const theme = props.theme;
 	const [map, setMap] = useState("city");
 	const [alignment, setAlignment] = useState("road");
 
@@ -46,54 +47,48 @@ function ToggleButtons(props) {
 		props.sendRequest("POST", 0, 0, "tick", 0, 0, "tick", "tick");
 	}
 
-	const Text = styled("div")(({ theme }) => ({
-		...theme.typography.ToggleButton,
-		backgroundColor: theme.palette.background.paper,
-		padding: theme.spacing(0),
-		//lime green hex code:
-		color: "#32CD32",
-		margin: 0,
-		//center text
+	const Text = styled("h1")(({theme}) => ({
+		color: theme.palette.primary.main,
 		textAlign: "center",
+		margin: "auto", 
 	}));
 
 	const MapSelection = (matches) => {
 		let label = "";
-		let maxWidth = 70;
-		let maxHeight = 40;
+		let topPadding = '-4px';
 		if (!matches) {
 			label = "Map";
-			maxWidth = 70;
-			maxHeight = 70;
+			topPadding = '10px';
 		}
+
 		return (
 			<FormControl
-				sx={{ m: !matches, maxHeight: maxHeight, maxWidth: maxWidth, pt: !matches }}
+			color='primary'
+				sx={{ m:"5px", maxHeight: 70, maxWidth: 70, pt: topPadding }}
 				size='small'>
-				{matches ? (
-					<InputLabel />
+				{matches ? ( null
 				) : (
 					<InputLabel id='map-select' sx={{ mt: 1 }}>
 						Map
 					</InputLabel>
 				)}
 				<Select
-					labelId='map-select'
+					color='primary'
 					id='map-select'
 					value={props.mapSelection}
 					label={label}
 					onChange={handleMapChange}>
 					<MenuItem value={"city"}>
-						<CityIcon />
+						<CityIcon ic={'menubtn'}/>
 					</MenuItem>
 					<MenuItem value={"resDemand"}>
-						<ResidentialIcon />
+						<ResidentialIcon ic={'menubtn'}/>
 					</MenuItem>
 					<MenuItem value={"indDemand"}>
-						<IndustrialIcon />{" "}
+						<IndustrialIcon ic={'menubtn'}/>{" "}
 					</MenuItem>
 					<MenuItem value={"comDemand"}>
-						<CommercialIcon />
+						<CommercialIcon ic={'menubtn'}/>
 					</MenuItem>
 				</Select>
 			</FormControl>
@@ -111,75 +106,29 @@ function ToggleButtons(props) {
 				aria-label='Platform'
 				orientation={orientation}>
 				{matches ? (
-					<Text variant='outlined' square sx={{ borderRadius: 1 }}>
-						<h2 style={{ margin: 3, padding: 0 }}>${props.userData.money}</h2>
-					</Text>
+					<Text>
+					${props.userData.money}
+				</Text>
 				) : null}
-				<ToggleButton value='road'>
-					{matches ? (
-						"Road"
-					) : (
-							<RoadIcon />
-					)}
-				</ToggleButton>
-				<ToggleButton value='pole'>
-					{matches ? (
-						"Pole"
-					) : (
-							<PoleIcon />
-					)}
-				</ToggleButton>
+				<ToggleButton value='road'>{matches ? "Road" : null} <RoadIcon ic={"btn"} /></ToggleButton>
+				<ToggleButton value='pole'>{matches ? "Pole" : null} <PoleIcon ic={"btn"} /></ToggleButton>
 				<ToggleButton value='residential'>
-					{matches ? (
-						"Residential"
-					) : (
-							<ResidentialIcon />
-					)}
+					{matches ? "Residential" : null} <ResidentialIcon ic={"btn"} />
 				</ToggleButton>
-				<ToggleButton value='commercial'>
-					{matches ? (
-						"Commercial"
-					) : (
-							<CommercialIcon />
-					)}{" "}
-				</ToggleButton>
-				<ToggleButton value='industrial'>
-					{matches ? (
-						"Industrial"
-					) : (
-							<IndustrialIcon />
-					)}
-				</ToggleButton>
-				<ToggleButton value='coal'>
-					{matches ? (
-						"Coal"
-					) : (
-							<NuclearIcon />
-					)}
-				</ToggleButton>
-				<ToggleButton value='delete'>
-					{matches ? (
-						"Bulldoze"
-					) : (
-							<BulldozeIcon />
-					)}
-				</ToggleButton>
-				<ToggleButton value='info'>
-					{matches ? (
-						"Info"
-					) : (
-							<AboutIcon />
-					)}
-				</ToggleButton>
+				<ToggleButton value='commercial'> {matches ? "Commercial" : null}<div style={{paddingLeft: '7px'}}/> <CommercialIcon ic={"btn"} /></ToggleButton>
+				<ToggleButton value='industrial'>{matches ? "Industrial" : null}<IndustrialIcon ic={"btn"} /> </ToggleButton>
+				<ToggleButton value='coal'>{matches ? "Coal" : null} <NuclearIcon ic={"btn"} /></ToggleButton>
+				<ToggleButton value='delete'>{matches ? "Bulldoze" : null}<BulldozeIcon ic={"btn"} /> </ToggleButton>
+				<ToggleButton value='info'>{matches ? "Info" : null}<AboutIcon ic={"btn"} /> </ToggleButton>
 				{matches ? MapSelection() : null}
 			</ToggleButtonGroup>
 			<br />
 			{matches ? null : (
 				<>
-					<MapSelection />{" "}
-					<Text sx={{ display: "inline-block", p: 0, m: "auto", align: "center", left: 5 }}>
-						<h2 style={{ margin: 10 }}>${props.userData.money}</h2>
-					</Text>{" "}
+					<MapSelection />
+					<Text>
+						${props.userData.money}
+					</Text>
 				</>
 			)}
 		</Paper>

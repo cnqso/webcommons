@@ -1,0 +1,17 @@
+.btn {
+    margin-left: auto;
+    
+}
+
+.menubtn {
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (max-width: 600px) {
+    .btn {
+        margin-right: auto;
+        margin-top:5px;
+        margin-bottom:5px;
+    }
+}

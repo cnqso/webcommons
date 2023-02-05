@@ -10,31 +10,6 @@
   padding: 0;
 }
 .Canvas {
-  background-color: #121212;
   width: 100vw;
   height: calc(100vh - 64px);
-}
-
-.road {
-  background-color: #463836;
-}
-
-.residential {
-  background-color: #700000;
-}
-
-.commercial {
-  background-color: #1100ff;
-}
-
-.industrial {
-  background-color: #ffac41;
-}
-
-.coal {
-  background-color: #ffacc1;
-}
-
-.empty {
-  background-color: #000000;
 }
