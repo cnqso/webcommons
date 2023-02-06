@@ -4,20 +4,19 @@ import React, { useEffect, useRef, useState } from "react";
 import "./Canvas.css";
 import config from "./config";
 import buildingsConfig from "./buildingsConfig.json";
-import spritemap from "./tileset.png";
+import spritemap from "./newtTileset.png";
 
 
 
-const sourcePx = config.TILEMAP_SQUARE;
+const sourcePx = config.SPRITEMAP_RES;
 const mapStyles = config.MAP_STYLES;
+const sheetWidth = config.SPRITEMAP_WIDTH;
 
 function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWidth, mapHeight) {
-	let roads = 0; //Used for debugging
-	let busyRoads = 0;
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;
-			const drawY = (y + 40) * tilePx;
+			const drawY = (y + 40) * tilePx - tilePx;
 			let tile = 0;
 			//If we are using an alternative mapmode, we don't render buildings as sprites, but as colored rectangles
 			if (mapSelection !== "city" && mapSelection !== "loading" && tiles[y][x].type !== "empty") {
@@ -46,7 +45,6 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 			}
 
 			if (tiles[y][x].type === "road") {
-				roads++;
 				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
 				tile += x > 0 && tiles[y][x - 1].type === "road";
@@ -57,15 +55,14 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 				tile += 4 * (y < 1);
 				tile += 8 * (y < tiles.length - 1 && tiles[y + 1][x].type === "road");
 				tile += 8 * (y > tiles.length - 2);
-				tile += buildingsConfig["road"].sprite.y * 16; //y offset
+				tile += buildingsConfig["road"].sprite.y * sheetWidth; //y offset
 
 				let traffic = 0;
 				try {
 					const heatMap = lastSnapshot.current[tiles[y][x].buildingId].heatMap;
 					traffic = heatMap[0] + heatMap[1] + heatMap[2]; //We only want the RCI values
 				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
-				if (traffic > 50) {
-					busyRoads++
+				if (traffic > 400) {
 					tile += 16; //If traffic above some number, use the "busy" road sprites
 				
 				}
@@ -81,20 +78,19 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 				tile += 4 * (y < 1);
 				tile += 8 * (y < tiles.length - 1 && !!tiles[y + 1][x].buildingId);
 				tile += 8 * (y > tiles.length - 2);
-				tile += buildingsConfig["pole"].sprite.y * 16; //y offset
+				tile += buildingsConfig["pole"].sprite.y * sheetWidth; //y offset
 			}
 			
 			
 			else {
 				tile = tiles[y][x].spriteIndex;
 			}
-			const srcX = (tile % 16) * sourcePx;
-			const srcY = Math.floor(tile / 16) * sourcePx;
+			const srcX = (tile % sheetWidth) * sourcePx;
+			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2;
 			ctx.globalAlpha = 1;
-			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx, drawX, drawY, tilePx, tilePx);
+			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx*2, drawX, drawY, tilePx, tilePx*2);
 		}
 	}
-	// console.log(`${busyRoads} out of ${roads} roads are busy`)
 }
 
 function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
@@ -126,7 +122,7 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 			const drawY = (Math.floor(j / w) + offsets[i][1]) * tilePx;
 			tile = thisPlot[j];
 
-			if (tile > 959) {
+			if (tile > 959) { //TODO: wherever road sprite is + same with pole
 				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
 				tile += (j > 0 && thisPlot[j - 1] > 959);
@@ -138,8 +134,8 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 				tile += 8 * (j < w*(h-1) && thisPlot[j + w] > 959)
 				tile += 8 * (j > w*(h-1));
 			}
-			const srcX = (tile % 16) * sourcePx;
-			const srcY = Math.floor(tile / 16) * sourcePx;
+			const srcX = (tile % sheetWidth) * sourcePx;
+			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2 + tilePx;
 			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx, drawX, drawY, tilePx, tilePx);
 		}
 	}

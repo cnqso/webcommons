@@ -106,7 +106,7 @@ const Canvas = ({
 		const developmentOffset = level * 9;
 
 		const spriteOffset =
-			buildingsConfig[type].sprite.y * 16 + buildingsConfig[type].sprite.x + developmentOffset;
+			buildingsConfig[type].sprite.y * config.SPRITEMAP_WIDTH + buildingsConfig[type].sprite.x + developmentOffset;
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				tempTiles[i][j].type = type;
@@ -221,7 +221,7 @@ const Canvas = ({
 					let developmentOffset = thisBuilding.level * 9;
 
 					const spriteOffset =
-						buildingsConfig[thisBuilding.building].sprite.y * 16 +
+						buildingsConfig[thisBuilding.building].sprite.y * config.SPRITEMAP_WIDTH +
 						buildingsConfig[thisBuilding.building].sprite.x +
 						developmentOffset;
 					for (let j = yMin; j <= yMax; j++) {

@@ -5,10 +5,16 @@ const config = {
 
     //Tile config
     TILE_PIXELS: 32,
-    TILEMAP_SQUARE: 64,
     X_ERROR: 0.01,
 	Y_ERROR: 0.01,
     MARGIN: 0,
+
+
+    //Tilemap config
+    SPRITEMAP_RES: 64,
+    SPRITEMAP_WIDTH: 126,
+    SPRITEMAP_HEIGHT: 16,
+
 
 
     //Simulation config
