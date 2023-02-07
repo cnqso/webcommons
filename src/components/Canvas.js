@@ -197,10 +197,14 @@ const Canvas = ({
 				//search for deleted buildings
 				console.log("something was deleted");
 				for (let i = 0; i < lastSnapshotLength; i++) {
-					if (!data[oldKeys[i]]) {
+					if (!data[oldKeys[i]] && lastSnapshot.current[oldKeys[i]]) {
+						try {
 						const { x, y, building } = lastSnapshot.current[oldKeys[i]];
 						const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingsConfig[building].size);
 						drawBuilding(yMin, yMax, xMin, xMax, "empty", "");
+						} catch (e) {
+							console.log(e);
+						}
 					}
 				}
 				lastSnapshot.current = data;
@@ -210,6 +214,7 @@ const Canvas = ({
 				//Building IDs are chronological by time for this purpose, best of both worlds of arrays and objects
 				for (let i = lastSnapshotLength; i < keys.length; i++) {
 					let thisBuilding = data[keys[i]];
+					try {
 					let { xMin, xMax, yMin, yMax } = getBounds(
 						thisBuilding.x,
 						thisBuilding.y,
@@ -231,6 +236,11 @@ const Canvas = ({
 							tempTiles2[j][k].spriteIndex = spriteOffset + l;
 							l++;
 						}
+					}
+				}
+					catch (e) {
+						console.log(thisBuilding, e);
+						sendRequest("DELETE", 0, 0, "delete", keys[i], mapDataLocation);
 					}
 				}
 

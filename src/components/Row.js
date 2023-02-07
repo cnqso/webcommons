@@ -6,8 +6,6 @@ import config from "./config";
 import buildingsConfig from "./buildingsConfig.json";
 import spritemap from "./newtTileset.png";
 
-
-
 const sourcePx = config.SPRITEMAP_RES;
 const mapStyles = config.MAP_STYLES;
 const sheetWidth = config.SPRITEMAP_WIDTH;
@@ -34,11 +32,11 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 					const opps = heatSum - heatMap[mapStyle.heatMapIndex];
 					heatTile = heatMap[mapStyle.heatMapIndex] / (opps / 2);
 				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
-					
+
 				ctx.globalAlpha = 1;
 				ctx.fillStyle = "#FFFFFF";
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
-				ctx.globalAlpha = heatTile/2;
+				ctx.globalAlpha = heatTile / 2;
 				ctx.fillStyle = mapStyle.color;
 				ctx.fillRect(drawX, drawY, tilePx, tilePx);
 				continue;
@@ -48,9 +46,9 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
 				tile += x > 0 && tiles[y][x - 1].type === "road";
-				tile += x < 1
+				tile += x < 1;
 				tile += 2 * (x < tiles[0].length - 1 && tiles[y][x + 1].type === "road");
-				tile += 2 * (x > tiles[0].length-2);
+				tile += 2 * (x > tiles[0].length - 2);
 				tile += 4 * (y > 0 && tiles[y - 1][x].type === "road");
 				tile += 4 * (y < 1);
 				tile += 8 * (y < tiles.length - 1 && tiles[y + 1][x].type === "road");
@@ -64,43 +62,52 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 				} catch (e) {} //Sometimes hits an unloaded database. Will rerender in ~5ms
 				if (traffic > 400) {
 					tile += 16; //If traffic above some number, use the "busy" road sprites
-				
 				}
-				
-
-
 			} else if (tiles[y][x].type === "pole") {
 				tile += x > 0 && !!tiles[y][x - 1].buildingId;
-				tile += x < 1
+				tile += x < 1;
 				tile += 2 * (x < tiles[0].length - 1 && !!tiles[y][x + 1].buildingId);
-				tile += 2 * (x > tiles[0].length-2);
+				tile += 2 * (x > tiles[0].length - 2);
 				tile += 4 * (y > 0 && !!tiles[y - 1][x].buildingId);
 				tile += 4 * (y < 1);
 				tile += 8 * (y < tiles.length - 1 && !!tiles[y + 1][x].buildingId);
 				tile += 8 * (y > tiles.length - 2);
 				tile += buildingsConfig["pole"].sprite.y * sheetWidth; //y offset
-			}
-			
-			
-			else {
+			} else {
 				tile = tiles[y][x].spriteIndex;
 			}
 			const srcX = (tile % sheetWidth) * sourcePx;
 			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2;
 			ctx.globalAlpha = 1;
-			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx*2, drawX, drawY, tilePx, tilePx*2);
+			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx * 2, drawX, drawY, tilePx, tilePx * 2);
+			try {
+				if (tiles[y][x].type !== 'empty' && tiles[y][x].type !== 'road' && lastSnapshot.current[tiles[y][x].buildingId].power === false) {
+					const powerX = 16 * sourcePx;
+					const powerY = 4 * sourcePx * 2;
+					ctx.drawImage(
+						tileset,
+						powerX,
+						powerY,
+						sourcePx,
+						sourcePx * 2,
+						drawX,
+						drawY,
+						tilePx,
+						tilePx * 2
+					);
+				}
+			} catch (e) {}
 		}
 	}
 }
 
 function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
-	
 	const w = config.TILE_WIDTH;
 	const h = config.TILE_HEIGHT;
 	const offsets = [
-		[0, 2*h],
-		[w, 2*h],
-		[2 * w, 2*h],
+		[0, 2 * h],
+		[w, 2 * h],
+		[2 * w, 2 * h],
 		[0, h],
 		[2 * w, h],
 		[0, 0],
@@ -108,13 +115,12 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 		[2 * w, 0],
 	];
 	if (!loggedIn) {
-		offsets.splice(4, 0, [w, h])
-		rawTiles.push(rawTiles[4])
+		offsets.splice(4, 0, [w, h]);
+		rawTiles.push(rawTiles[4]);
 	}
 
 	let tile = 0;
 	for (let i = 0; i < rawTiles.length; i++) {
-
 		const thisPlot = rawTiles[i];
 
 		for (let j = 0; j < rawTiles[i].length; j++) {
@@ -122,17 +128,18 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 			const drawY = (Math.floor(j / w) + offsets[i][1]) * tilePx;
 			tile = thisPlot[j];
 
-			if (tile > 959) { //TODO: wherever road sprite is + same with pole
+			if (tile > 959) {
+				//TODO: wherever road sprite is + same with pole
 				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
-				tile += (j > 0 && thisPlot[j - 1] > 959);
-				tile += (j%w === 0);
-				tile += 2 * (j < w*h && thisPlot[j + 1] > 959);
-				tile += 2 * (j%w === w-1);
-				tile += 4 * (j > w && thisPlot[j - w] > 959)
+				tile += j > 0 && thisPlot[j - 1] > 959;
+				tile += j % w === 0;
+				tile += 2 * (j < w * h && thisPlot[j + 1] > 959);
+				tile += 2 * (j % w === w - 1);
+				tile += 4 * (j > w && thisPlot[j - w] > 959);
 				tile += 4 * (j < w);
-				tile += 8 * (j < w*(h-1) && thisPlot[j + w] > 959)
-				tile += 8 * (j > w*(h-1));
+				tile += 8 * (j < w * (h - 1) && thisPlot[j + w] > 959);
+				tile += 8 * (j > w * (h - 1));
 			}
 			const srcX = (tile % sheetWidth) * sourcePx;
 			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2 + tilePx;
@@ -141,15 +148,15 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 	}
 	//Borders
 	if (loggedIn) {
-	ctx.fillStyle = "#000000";
-	ctx.fillRect(w * tilePx - 10, 0, 10, 3 * h * tilePx);
-	ctx.fillRect(2 * w * tilePx, 0, 10, 3 * h * tilePx);
-	ctx.fillRect(0, h * tilePx - 10, 3 * w * tilePx, 10);
-	ctx.fillRect(0, 2 * h * tilePx, 3 * w * tilePx, 10);
+		ctx.fillStyle = "#000000";
+		ctx.fillRect(w * tilePx - 10, 0, 10, 3 * h * tilePx);
+		ctx.fillRect(2 * w * tilePx, 0, 10, 3 * h * tilePx);
+		ctx.fillRect(0, h * tilePx - 10, 3 * w * tilePx, 10);
+		ctx.fillRect(0, 2 * h * tilePx, 3 * w * tilePx, 10);
 	}
 }
 
-function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, TILE_PIXELS, loggedIn}) {
+function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, TILE_PIXELS, loggedIn }) {
 	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 	const tileset = new Image();
@@ -163,7 +170,7 @@ function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, 
 			const ctx = canvas.current.getContext("2d");
 			neighborsMap(ctx, neighborTiles, tileset, TILE_PIXELS, loggedIn, mapWidth, mapHeight);
 			if (loggedIn) {
-			playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, TILE_PIXELS);
+				playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, TILE_PIXELS);
 			}
 		};
 		console.log("Rendered");
