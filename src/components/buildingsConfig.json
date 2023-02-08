@@ -7,7 +7,8 @@
 			"x": 0
 		},
 		"cost": 10,
-		"buildingCode": null
+		"buildingCode": null,
+		"maxLevel": 1
 	},
 	"pole": {
 		"color": "#000040",
@@ -17,7 +18,8 @@
 			"x": 16
 		},
 		"cost": 10,
-		"buildingCode": null
+		"buildingCode": null,
+		"maxLevel": 1
 	},
 	"residential": {
 		"color": "#700000",
@@ -27,7 +29,8 @@
 			"x": 0
 		},
 		"cost": 100,
-		"buildingCode": 0
+		"buildingCode": 0,
+		"maxLevel": 13
 	},
 	"industrial": {
 		"color": "#ffac41",
@@ -37,7 +40,8 @@
 			"x": 0
 		},
 		"cost": 100,
-		"buildingCode": 1
+		"buildingCode": 1,
+		"maxLevel": 7
 	},
 	"commercial": {
 		"color": "#1100ff",
@@ -47,7 +51,8 @@
 			"x": 0
 		},
 		"cost": 100,
-		"buildingCode": 2
+		"buildingCode": 2,
+		"maxLevel": 13
 	},
 	"coal": {
 		"color": "#ffacc1",
@@ -58,6 +63,7 @@
 		},
 		"cost": 300,
 		"buildingCode": null,
+		"maxLevel": 1,
 		"power": 10
 	},
 	"nuclear": {
@@ -69,6 +75,7 @@
 		},
 		"cost": 500,
 		"buildingCode": null,
+		"maxLevel": 1,
 		"power": 50
 	},
 	"solar": {
@@ -80,6 +87,7 @@
 		},
 		"cost": 150,
 		"buildingCode": null,
+		"maxLevel": 1,
 		"power": 5
 	},
 	"empty": {
@@ -90,7 +98,8 @@
 			"x": 0
 		},
 		"cost": 5,
-		"buildingCode": null
+		"buildingCode": null,
+		"maxLevel": 1
 	},
 	"delete": {
 		"color": "#000000",
@@ -100,6 +109,7 @@
 			"x": 0
 		},
 		"cost": 5,
-		"buildingCode": null
+		"buildingCode": null,
+		"maxLevel": 1
 	}
 }

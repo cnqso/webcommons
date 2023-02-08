@@ -14,7 +14,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;
-			const drawY = (y + 40) * tilePx - tilePx;
+			const drawY = (y + 39) * tilePx;
 			let tile = 0;
 			//If we are using an alternative mapmode, we don't render buildings as sprites, but as colored rectangles
 			if (mapSelection !== "city" && mapSelection !== "loading" && tiles[y][x].type !== "empty") {
@@ -125,26 +125,25 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 
 		for (let j = 0; j < rawTiles[i].length; j++) {
 			const drawX = ((j % w) + offsets[i][0]) * tilePx;
-			const drawY = (Math.floor(j / w) + offsets[i][1]) * tilePx;
+			const drawY = (Math.floor(j / w) + offsets[i][1] - 1) * tilePx;
 			tile = thisPlot[j];
 
-			if (tile > 959) {
+			if (tile === 630) {
 				//TODO: wherever road sprite is + same with pole
 				//Bitwise operations to determine which road sprite to use, returns a number from 0 to 15.
 				//Prettier made the if statements look ugly so I had no choice but to go implicit-type-conversion-mode
-				tile += j > 0 && thisPlot[j - 1] > 959;
+				tile += j > 0 && thisPlot[j - 1] === 630;
 				tile += j % w === 0;
-				tile += 2 * (j < w * h && thisPlot[j + 1] > 959);
+				tile += 2 * (j < w * h && thisPlot[j + 1] === 630);
 				tile += 2 * (j % w === w - 1);
-				tile += 4 * (j > w && thisPlot[j - w] > 959);
+				tile += 4 * (j > w && thisPlot[j - w] === 630);
 				tile += 4 * (j < w);
-				tile += 8 * (j < w * (h - 1) && thisPlot[j + w] > 959);
+				tile += 8 * (j < w * (h - 1) && thisPlot[j + w] === 630);
 				tile += 8 * (j > w * (h - 1));
 			}
 			const srcX = (tile % sheetWidth) * sourcePx;
-			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2 + tilePx;
-			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx, drawX, drawY, tilePx, tilePx);
-		}
+			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2;
+			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx * 2, drawX, drawY, tilePx, tilePx * 2);		}
 	}
 	//Borders
 	if (loggedIn) {
