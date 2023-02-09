@@ -91,7 +91,7 @@
 		"power": 5
 	},
 	"empty": {
-		"color": "#1b1b22",
+		"color": "#59c135",
 		"size": 1,
 		"sprite": {
 			"y": 0,
@@ -102,7 +102,7 @@
 		"maxLevel": 1
 	},
 	"delete": {
-		"color": "#000000",
+		"color": "#59c135",
 		"size": 1,
 		"sprite": {
 			"y": 0,

@@ -11,6 +11,8 @@ const mapStyles = config.MAP_STYLES;
 const sheetWidth = config.SPRITEMAP_WIDTH;
 
 function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWidth, mapHeight) {
+	ctx.fillStyle = buildingsConfig.empty.color;
+	ctx.fillRect(40*tilePx, 40*tilePx, 40*tilePx, 40*tilePx);
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;
@@ -22,7 +24,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 				if (tiles[y][x].type !== "road") {
 					ctx.globalAlpha = 1;
 					ctx.fillStyle = buildingsConfig[tiles[y][x].type].color;
-					ctx.fillRect(drawX, drawY, tilePx, tilePx);
+					ctx.fillRect(drawX, drawY+tilePx, tilePx, tilePx);
 					continue;
 				}
 				let heatTile = 0;
@@ -35,10 +37,10 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 
 				ctx.globalAlpha = 1;
 				ctx.fillStyle = "#FFFFFF";
-				ctx.fillRect(drawX, drawY, tilePx, tilePx);
+				ctx.fillRect(drawX, drawY+tilePx, tilePx, tilePx);
 				ctx.globalAlpha = heatTile / 2;
 				ctx.fillStyle = mapStyle.color;
-				ctx.fillRect(drawX, drawY, tilePx, tilePx);
+				ctx.fillRect(drawX, drawY+tilePx, tilePx, tilePx);
 				continue;
 			}
 

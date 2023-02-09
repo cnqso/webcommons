@@ -25,8 +25,6 @@ import {
 } from "./icons";
 
 function ToggleButtons(props) {
-	const theme = props.theme;
-	const [map, setMap] = useState("city");
 	const [alignment, setAlignment] = useState("road");
 
 	let orientation = "horizontal";
@@ -117,7 +115,7 @@ function ToggleButtons(props) {
 				</ToggleButton>
 				<ToggleButton value='commercial'> {matches ? "Commercial" : null}<div style={{paddingLeft: '7px'}}/> <CommercialIcon ic={"btn"} /></ToggleButton>
 				<ToggleButton value='industrial'>{matches ? "Industrial" : null}<IndustrialIcon ic={"btn"} /> </ToggleButton>
-				<ToggleButton value='coal'>{matches ? "Coal" : null} <NuclearIcon ic={"btn"} /></ToggleButton>
+				<ToggleButton value='coal'>{matches ? "Power" : null} <NuclearIcon ic={"btn"} /></ToggleButton>
 				<ToggleButton value='delete'>{matches ? "Bulldoze" : null}<BulldozeIcon ic={"btn"} /> </ToggleButton>
 				<ToggleButton value='info'>{matches ? "Info" : null}<AboutIcon ic={"btn"} /> </ToggleButton>
 				{matches ? MapSelection() : null}

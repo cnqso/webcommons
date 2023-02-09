@@ -36,9 +36,9 @@ const config = {
     MAP_STYLES: {
         loading: {color: "#1b1b22", heatMapIndex: -2},
         city: {color: "#1b1b22", heatMapIndex: -1},
-        resDemand: {color:"#700000", heatMapIndex: 0},
-        indDemand: {color:"#ffac41", heatMapIndex: 1},
-        comDemand: {color: "#1100ff", heatMapIndex: 2},
+        resDemand: {color:"#be0d00", heatMapIndex: 0},
+        indDemand: {color:"#ffd900", heatMapIndex: 1},
+        comDemand: {color: "#0044ff", heatMapIndex: 2},
         landValue: {color: "#59c135", heatMapIndex: 3},
     }
 }
