@@ -102,6 +102,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 }
 
 function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
+	console.log(JSON.stringify(rawTiles));
 	const w = config.TILE_WIDTH;
 	const h = config.TILE_HEIGHT;
 	const offsets = [
