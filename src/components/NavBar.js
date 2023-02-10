@@ -25,9 +25,10 @@ const modalStyle = {
 	top: "50%",
 	left: "50%",
 	transform: "translate(-50%, -50%)",
-	width: "50%",
+	width: "min(100vw, 500px)",
 	bgcolor: "background.paper",
-	boxShadow: 24,
+	fontSize: "min(3vw, 1.3em)",
+	boxShadow: 15,
 	p: 3,
 };
 
@@ -119,14 +120,13 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 						</div>
 				</Box>
 			</Modal>
-			<Modal open={howToOpen} onClose={handleHowToClose} aria-labelledby='modal-how-to'>
+			<Modal open={howToOpen} onClose={handleHowToClose} aria-labelledby='modal-how-to' disableScrollLock={true}>
 				<Box sx={modalStyle}>
-					<Typography id='modal-how-to' variant='h6' component='h2'>
+				<h2>
 						How to play
-					</Typography>
-					<Typography id='modal-how-to-body' sx={{ mt: 2 }}>
-						Commons is a game made to be played over many days. There is no predetermined goal.
-						<br />
+						</h2>
+						Commons is a game played over many days. There is no predetermined goal.
+						<br/>
 						<br/>
 						Every 15 minutes, the game will update and the world will change. At this time, 
 						you will receive money from your buildings and all of your 'zones' will have a chance of growth or decay. 
@@ -138,8 +138,13 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 						and lighter colors indicate a low relative supply. Buildings grow faster when the local supply of their good, service, or labor is comparatively low.
 						<br />
 						<br/>
-						Buildings cost money to build, and generate money over time. Power plants cost X, zones cost y, and roads/power lines cost z.
-					</Typography>
+						Buildings cost money to build, and generate money over time. Power plants cost $300, zones cost $100, and roads/power lines cost $10. 
+						Every building requires power to grow. Power travels across all building types, not just power lines.
+						<br />
+						<br/>
+						There are 8 plots around you, each of which can be built on by another player. You can connect your towns together through roads, 
+						power lines, or adjacent buildings. This may be mutually beneficial, but it may also be detrimental to one or both of you. Consider
+						the relative supply and demand of your zones before connecting.
 				</Box>
 			</Modal>
 			<AppBar position='static' sx={{color: 'appBarText', backgroundColor: 'appBar'}} >

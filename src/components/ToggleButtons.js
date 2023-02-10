@@ -10,7 +10,6 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import Tooltip from "@mui/material/Tooltip";
 import "./ToggleButtons.css";
 import {
 	AboutIcon,
@@ -41,9 +40,6 @@ function ToggleButtons(props) {
 	const handleMapChange = (event) => {
 		props.setMapSelection(event.target.value);
 	};
-	function sendTickRequest() {
-		props.sendRequest("POST", 0, 0, "tick", 0, 0, "tick", "tick");
-	}
 
 	const Text = styled("h1")(({theme}) => ({
 		color: theme.palette.primary.main,
@@ -95,7 +91,6 @@ function ToggleButtons(props) {
 
 	return (
 		<Paper className='toggleButtons'>
-			{matches ? <button onClick={sendTickRequest}>tick</button> : null}
 			<ToggleButtonGroup
 				color='primary'
 				value={alignment}
