@@ -174,8 +174,10 @@ function App() {
 	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 	let theme = lightTheme;
+	let themeString = "light";
 	if (darkMode) {
 		theme = darkTheme;
+		themeString = "dark";
 	}
 
 	useEffect(() => {
@@ -337,6 +339,7 @@ function App() {
 							userData={userData}
 							setUserData={setUserData}
 							TILE_PIXELS={TILE_PIXELS}
+							themeString={themeString}
 						/>
 					</>
 				) : (

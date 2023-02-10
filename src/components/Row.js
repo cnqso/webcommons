@@ -5,14 +5,16 @@ import "./Canvas.css";
 import config from "./config";
 import buildingsConfig from "./buildingsConfig.json";
 import spritemap from "./newtTileset.png";
+import { Tooltip } from "react-tooltip";
+import "./tooltip.css";
 
 const sourcePx = config.SPRITEMAP_RES;
 const mapStyles = config.MAP_STYLES;
 const sheetWidth = config.SPRITEMAP_WIDTH;
 
-function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWidth, mapHeight) {
+function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx) {
 	ctx.fillStyle = buildingsConfig.empty.color;
-	ctx.fillRect(40*tilePx, 40*tilePx, 40*tilePx, 40*tilePx);
+	ctx.fillRect(40 * tilePx, 40 * tilePx, 40 * tilePx, 40 * tilePx);
 	for (let y = 0; y < tiles.length; y++) {
 		for (let x = 0; x < tiles[0].length; x++) {
 			const drawX = (x + 40) * tilePx;
@@ -24,7 +26,7 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 				if (tiles[y][x].type !== "road") {
 					ctx.globalAlpha = 1;
 					ctx.fillStyle = buildingsConfig[tiles[y][x].type].color;
-					ctx.fillRect(drawX, drawY+tilePx, tilePx, tilePx);
+					ctx.fillRect(drawX, drawY + tilePx, tilePx, tilePx);
 					continue;
 				}
 				let heatTile = 0;
@@ -37,10 +39,10 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 
 				ctx.globalAlpha = 1;
 				ctx.fillStyle = "#FFFFFF";
-				ctx.fillRect(drawX, drawY+tilePx, tilePx, tilePx);
+				ctx.fillRect(drawX, drawY + tilePx, tilePx, tilePx);
 				ctx.globalAlpha = heatTile / 2;
 				ctx.fillStyle = mapStyle.color;
-				ctx.fillRect(drawX, drawY+tilePx, tilePx, tilePx);
+				ctx.fillRect(drawX, drawY + tilePx, tilePx, tilePx);
 				continue;
 			}
 
@@ -83,7 +85,11 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 			ctx.globalAlpha = 1;
 			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx * 2, drawX, drawY, tilePx, tilePx * 2);
 			try {
-				if (tiles[y][x].type !== 'empty' && tiles[y][x].type !== 'road' && lastSnapshot.current[tiles[y][x].buildingId].power === false) {
+				if (
+					tiles[y][x].type !== "empty" &&
+					tiles[y][x].type !== "road" &&
+					lastSnapshot.current[tiles[y][x].buildingId].power === false
+				) {
 					const powerX = 16 * sourcePx;
 					const powerY = 4 * sourcePx * 2;
 					ctx.drawImage(
@@ -104,7 +110,6 @@ function playMap(ctx, tiles, tileset, mapSelection, lastSnapshot, tilePx, mapWid
 }
 
 function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
-	console.log(JSON.stringify(rawTiles));
 	const w = config.TILE_WIDTH;
 	const h = config.TILE_HEIGHT;
 	const offsets = [
@@ -146,7 +151,8 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 			}
 			const srcX = (tile % sheetWidth) * sourcePx;
 			const srcY = Math.floor(tile / sheetWidth) * sourcePx * 2;
-			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx * 2, drawX, drawY, tilePx, tilePx * 2);		}
+			ctx.drawImage(tileset, srcX, srcY, sourcePx, sourcePx * 2, drawX, drawY, tilePx, tilePx * 2);
+		}
 	}
 	//Borders
 	if (loggedIn) {
@@ -158,13 +164,11 @@ function neighborsMap(ctx, rawTiles, tileset, tilePx, loggedIn) {
 	}
 }
 
-function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, TILE_PIXELS, loggedIn }) {
+function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, TILE_PIXELS, loggedIn, isOpen, tooltipText, tooltipPosition, themeString }) {
 	const mapWidth = config.TILE_WIDTH * TILE_PIXELS;
 	const mapHeight = config.TILE_HEIGHT * TILE_PIXELS;
 	const tileset = new Image();
 	tileset.src = spritemap;
-	//The spritemap is 32 by 32, each sprite is 64 pixels wide and tall
-
 	const canvas = useRef(null);
 
 	useEffect(() => {
@@ -178,7 +182,12 @@ function Row({ tiles, mapSelection, lastSnapshot, neighborTiles, editSelection, 
 		console.log("Rendered");
 	}, [tiles, mapSelection, loggedIn, neighborTiles]);
 
-	return <canvas ref={canvas} width={mapWidth * 3} height={mapHeight * 3}></canvas>;
+	return (
+		<>
+			<canvas id='canvasTT' ref={canvas} width={mapWidth * 3} height={mapHeight * 3}></canvas>
+			<Tooltip key={themeString} isOpen={isOpen} closeOnEsc={true} events={[]} variant={themeString} anchorId='canvasTT' html={tooltipText} position={tooltipPosition} />
+		</>
+	);
 }
 
 export default Row;

@@ -8,3 +8,6 @@
   height: calc(100vh - 64px);
   justify-content: center;
 }
+
+:link { color: #000; }
+:visited { color: #59c135; }

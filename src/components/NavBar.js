@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import MenuIcon from "@mui/icons-material/Menu";
-import {LogOutIcon, AboutIcon, QuestionIcon, SunMoonIcon} from "./icons";
+import {LogOutIcon, AboutIcon, QuestionIcon, SunMoonIcon, GithubIcon, WebsiteIcon, ResidentialIcon, IndustrialIcon, CommercialIcon} from "./icons";
 import "./NavBar.css";
 
 import Drawer from "@mui/material/Drawer";
@@ -25,11 +25,10 @@ const modalStyle = {
 	top: "50%",
 	left: "50%",
 	transform: "translate(-50%, -50%)",
-	width: 400,
+	width: "50%",
 	bgcolor: "background.paper",
-	border: "2px solid #000",
 	boxShadow: 24,
-	p: 4,
+	p: 3,
 };
 
 export default function NavBar({ signIn, signOut, user, userName, darkMode, setDarkMode }) {
@@ -105,14 +104,19 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 			</Drawer>
 			<Modal open={aboutOpen} onClose={handleAboutClose} aria-labelledby='modal-about'>
 				<Box sx={modalStyle}>
-					<Typography id='modal-about' variant='h6' component='h2'>
+					<h2>
 						About
-					</Typography>
-					<Typography id='modal-about-body' sx={{ mt: 2 }}>
-						Based on the original sim city
-						Tech stack: React, Firebase Realtime Database NoSQL, Google Cloud Functions
-						Personal site, github, technical blog
-					</Typography>
+					</h2>
+						Commons is an minimal city-builder web app. Users build persistent cities in an asynchronous multiplayer mosaic of 40x40 squares. Its mechanics are based on Sim City 1989.
+						<hr />
+						The front end was built with React, leaning heavily on HTML Canvas and Material UI. 
+						<br/>
+						The back end was built using Node.js, Express, and GCP.
+						<br/>
+						For more information, see the <a href="https://www.google.com/" target="_blank" rel="noreferrer">overlong technical blog</a>
+						<div className='centerSpan'>
+						   <WebsiteIcon ic="menubtn"/> <GithubIcon ic="menubtn"/>  
+						</div>
 				</Box>
 			</Modal>
 			<Modal open={howToOpen} onClose={handleHowToClose} aria-labelledby='modal-how-to'>
@@ -121,7 +125,20 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 						How to play
 					</Typography>
 					<Typography id='modal-how-to-body' sx={{ mt: 2 }}>
-						Duis mollis, est non commodo luctus, nisi erat porttitor ligula.
+						Commons is a game made to be played over many days. There is no predetermined goal.
+						<br />
+						<br/>
+						Every 15 minutes, the game will update and the world will change. At this time, 
+						you will receive money from your buildings and all of your 'zones' will have a chance of growth or decay. 
+						<br />
+						<br/>
+						There are 3 types of zones: residential <ResidentialIcon ic="smallbtn"/>, commercial <CommercialIcon ic="smallbtn"/>, 
+						and industrial <IndustrialIcon ic="smallbtn"/>. Each zone generates supply and demand of/for their respective good, service, or labor.
+						You can view the relative supply of each zone by selecting its icon in the map dropdown. Darker colors indicate a high relative supply, 
+						and lighter colors indicate a low relative supply. Buildings grow faster when the local supply of their good, service, or labor is comparatively low.
+						<br />
+						<br/>
+						Buildings cost money to build, and generate money over time. Power plants cost X, zones cost y, and roads/power lines cost z.
 					</Typography>
 				</Box>
 			</Modal>

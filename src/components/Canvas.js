@@ -58,7 +58,8 @@ const Canvas = ({
 	neighborTiles,
 	userData,
 	setUserData,
-	TILE_PIXELS
+	TILE_PIXELS,
+	themeString
 }) => {
 
 	const buildingsRef = ref(db, mapDataLocation);
@@ -68,10 +69,27 @@ const Canvas = ({
 	const clickxy = useRef([0, 0]);
 	const [tiles, setTiles] = useState(jsonTiles);
 	const lastSnapshot = useRef({});
+	const [isOpen, setIsOpen] = useState(false);
+	const [tooltipText, setTooltipText] = useState("hello");
+	const [tooltipPosition, setTooltipPosition] = useState({x:0,y:0});
 
-	const infoHandler = (x, y) => {
+	const infoHandler = (x, y, clientX, clientY) => {
 		//Gives tile and building information at click lcoation
 		//Todo - make this a tooltip
+		const thisBuildingData = lastSnapshot.current[tiles[y][x].buildingId];
+		let buildingType = buildingsConfig[tiles[y][x].type].prettyName;
+		let tooltipContent = (`<h1> ${buildingType} </h1>`)
+
+		if (buildingType !== "Empty Space" && buildingType !== "Road") {
+		tooltipContent = tooltipContent.concat(`<h2>Level: ${thisBuildingData.level} <br/> $ per cycle: ${thisBuildingData.level * 5}</h2>`);
+		}
+		if (buildingType === "Road") {
+			tooltipContent = tooltipContent.concat(`<h2>Residential Supply: ${Math.floor(thisBuildingData.heatMap[0])} <br/> Industrial Supply: ${Math.floor(thisBuildingData.heatMap[1])} <br/> Commercial Supply: ${Math.floor(thisBuildingData.heatMap[2])}</h2>`);
+		}
+			setTooltipText("<div>" + tooltipContent + "</div>");
+
+		//tooltip Position should be (40+x)*TILE_PIXELS, (40+y)*TILE_PIXELS
+		setTooltipPosition({x:clientX, y:clientY});
 		console.log(
 			`Building data: \n ${tiles[y][x].buildingId}: ${JSON.stringify(
 				lastSnapshot.current[tiles[y][x].buildingId],
@@ -79,17 +97,17 @@ const Canvas = ({
 				2
 			)} \nTile data: [${x}, ${y}] \n${JSON.stringify(tiles[y][x], null, 2)}`
 		);
+		setIsOpen(true);
+
 	};
 
 	const boundsempty = (yMin, yMax, xMin, xMax) => {
 		if (xMin < 0 || yMin < 0 || xMax >= config.TILE_WIDTH || yMax >= config.TILE_HEIGHT) {
-			console.log("Out of bounds");
 			return false;
 		}
 		for (let i = yMin; i <= yMax; i++) {
 			for (let j = xMin; j <= xMax; j++) {
 				if (tiles[i][j].type !== "empty") {
-					console.log("Space already occupied");
 					return false;
 				}
 			}
@@ -118,19 +136,18 @@ const Canvas = ({
 		setTiles([...tempTiles]);
 	};
 
-	const editMap = (x, y) => {
+	const editMap = (x, y, clientX, clientY) => {
 		//For special buildings, send to unique handlers. Otherwise, create an arbitrary building
 		if (editSelection.current === "delete") {
 			deleteBuilding(tiles[y][x].buildingId);
 		} else if (editSelection.current === "info") {
-			infoHandler(x, y);
+			infoHandler(x, y, clientX, clientY);
 		} else {
 			const buildingSize = buildingsConfig[editSelection.current].size;
 
 			const { xMin, xMax, yMin, yMax } = getBounds(x, y, buildingSize);
 
 			if (userData.money < buildingsConfig[editSelection.current].cost) {
-				console.log("Not enough money");
 				return;
 			}
 
@@ -158,8 +175,6 @@ const Canvas = ({
 			} catch (error) {
 				console.log(error);
 			}
-		} else {
-			console.log("There is no building there");
 		}
 	};
 
@@ -172,13 +187,14 @@ const Canvas = ({
 	};
 
 	const handleOnClick = (coordinates) => {
+		setIsOpen(false);
 		const adjustedX =
 			Math.floor((coordinates[0] + config.X_ERROR) / TILE_PIXELS) - config.TILE_WIDTH;
 		const adjustedY =
 			Math.floor((coordinates[1] + config.Y_ERROR) / TILE_PIXELS) - config.TILE_HEIGHT;
 
-		if ("authentication" !== "placeholder") {
-			editMap(adjustedX, adjustedY);
+		if (adjustedX >= 0 && adjustedY >= 0 && adjustedX < config.TILE_WIDTH && adjustedY < config.TILE_HEIGHT) {
+			editMap(adjustedX, adjustedY, coordinates[2], coordinates[3]);
 		}
 	};
 	//This function is in charge of keeping the map in sync with the database
@@ -195,7 +211,6 @@ const Canvas = ({
 
 			if (keys.length < lastSnapshotLength) {
 				//search for deleted buildings
-				console.log("something was deleted");
 				for (let i = 0; i < lastSnapshotLength; i++) {
 					if (!data[oldKeys[i]] && lastSnapshot.current[oldKeys[i]]) {
 						try {
@@ -251,7 +266,6 @@ const Canvas = ({
 			for (let i = 0; i < keys.length; i++) {
 				if (lastSnapshot.current[keys[i]] === undefined) continue;
 				if (data[keys[i]].level !== lastSnapshot.current[keys[i]].level) {
-					console.log("Level changed");
 					let thisBuilding = data[keys[i]];
 					let { xMin, xMax, yMin, yMax } = getBounds(
 						thisBuilding.x,
@@ -273,6 +287,7 @@ const Canvas = ({
 			style={{
 				position: "relative",
 			}}>
+				
 			<Space
 				onDecideHowToHandlePress={(e, coords) => {
 					clickxy.current = [coords.x, coords.y, coords.clientX, coords.clientY]; //[virtualx, virtualy, clientX, clientY] ommited are containerX and containerY
@@ -300,9 +315,12 @@ const Canvas = ({
 						mapSelection={mapSelection}
 						lastSnapshot={lastSnapshot}
 						neighborTiles={neighborTiles}
-						editSelection={editSelection}
 						TILE_PIXELS={TILE_PIXELS}
 						loggedIn={true}
+						isOpen = {isOpen}
+						tooltipText = {tooltipText}
+						tooltipPosition = {tooltipPosition}
+						themeString = {themeString}
 					/>
 				</Pressable>
 			</Space>

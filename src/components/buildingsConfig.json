@@ -8,7 +8,8 @@
 		},
 		"cost": 10,
 		"buildingCode": null,
-		"maxLevel": 1
+		"maxLevel": 1,
+		"prettyName": "Road"
 	},
 	"pole": {
 		"color": "#000040",
@@ -19,7 +20,8 @@
 		},
 		"cost": 10,
 		"buildingCode": null,
-		"maxLevel": 1
+		"maxLevel": 1,
+		"prettyName": "Power Line"
 	},
 	"residential": {
 		"color": "#700000",
@@ -30,7 +32,8 @@
 		},
 		"cost": 100,
 		"buildingCode": 0,
-		"maxLevel": 13
+		"maxLevel": 13,
+		"prettyName": "Residential Zone"
 	},
 	"industrial": {
 		"color": "#ffac41",
@@ -41,7 +44,8 @@
 		},
 		"cost": 100,
 		"buildingCode": 1,
-		"maxLevel": 7
+		"maxLevel": 7,
+		"prettyName": "Industrial Zone"
 	},
 	"commercial": {
 		"color": "#1100ff",
@@ -52,7 +56,8 @@
 		},
 		"cost": 100,
 		"buildingCode": 2,
-		"maxLevel": 13
+		"maxLevel": 13,
+		"prettyName": "Commercial Zone"
 	},
 	"coal": {
 		"color": "#ffacc1",
@@ -64,7 +69,8 @@
 		"cost": 300,
 		"buildingCode": null,
 		"maxLevel": 1,
-		"power": 10
+		"power": 10,
+		"prettyName": "Power Plant"
 	},
 	"nuclear": {
 		"color": "#fda4c1",
@@ -76,7 +82,8 @@
 		"cost": 500,
 		"buildingCode": null,
 		"maxLevel": 1,
-		"power": 50
+		"power": 50,
+		"prettyName": "Nuclear Power Plant"
 	},
 	"solar": {
 		"color": "#faacc1",
@@ -88,7 +95,8 @@
 		"cost": 150,
 		"buildingCode": null,
 		"maxLevel": 1,
-		"power": 5
+		"power": 5,
+		"prettyName": "Solar Power Plant"
 	},
 	"empty": {
 		"color": "#59c135",
@@ -99,7 +107,8 @@
 		},
 		"cost": 5,
 		"buildingCode": null,
-		"maxLevel": 1
+		"maxLevel": 1,
+		"prettyName": "Empty Space"
 	},
 	"delete": {
 		"color": "#59c135",
@@ -110,6 +119,7 @@
 		},
 		"cost": 5,
 		"buildingCode": null,
-		"maxLevel": 1
+		"maxLevel": 1,
+		"prettyName": "Empty Space"
 	}
 }

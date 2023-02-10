@@ -8,6 +8,13 @@
     margin-left: auto;
 }
 
+.smallbtn {
+    margin-right: auto;
+    margin-left: auto;
+    max-width: 17px;
+    max-height: 17px;
+}
+
 @media (max-width: 600px) {
     .btn {
         margin-right: auto;
