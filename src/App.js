@@ -18,14 +18,13 @@ import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 
 import { initializeApp } from "firebase/app";
 // import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getDatabase, ref, set, push, onValue, get, child } from "firebase/database";
+import { getDatabase, ref, get, child } from "firebase/database";
 import { useAuthState } from "react-firebase-hooks/auth";
 import useMediaQuery from "@mui/material/useMediaQuery";
 

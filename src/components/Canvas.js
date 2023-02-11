@@ -3,15 +3,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import jsonTiles from "../map.json";
 import "./Canvas.css";
-import { Space, Pressable, PressEventCoordinates } from "react-zoomable-ui";
+import { Space, Pressable } from "react-zoomable-ui";
 import config from "./config";
 import Row from "./Row";
 import buildingsConfig from "./buildingsConfig.json";
-import Tooltip from "@mui/material/Tooltip";
-import Box from "@mui/material/Box";
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, onValue, get, child } from "firebase/database";
+import { getDatabase, ref, onValue } from "firebase/database";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,

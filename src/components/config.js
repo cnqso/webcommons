@@ -21,18 +21,6 @@ const config = {
     TICKS_PER_SECOND: 1,
     MAX_DISTANCE: 30,
 
-    BUILDING_LEVEL: {
-    //Residential buildings have 5 visible levels determined by the value of popCapacity
-    "residential": [15, 30, 60, 100],
-
-    //Industrial buildings have 3 visible levels determined by the value of employmentCapacity
-    "industrial": [15, 30, 60, 100],
-
-    //Commercial buildings have 5 visible levels determined by the value of employmentCapacity
-    "commercial": [15, 30, 60, 100]
-    },
-
-
     MAP_STYLES: {
         loading: {color: "#1b1b22", heatMapIndex: -2},
         city: {color: "#1b1b22", heatMapIndex: -1},
