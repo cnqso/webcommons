@@ -13,7 +13,7 @@ import { getDatabase, ref, onValue } from "firebase/database";
 
 const firebaseConfig = {
 	apiKey: process.env.REACT_APP_PRIV_KEY,
-	authDomain: "reactcommons.firebaseapp.com",
+	authDomain: "commons.cnqso.com",
 	databaseURL: "https://reactcommons-default-rtdb.firebaseio.com",
 	projectId: "reactcommons",
 	storageBucket: "reactcommons.appspot.com",

@@ -33,6 +33,7 @@ const modalStyle = {
 export default function NavBar({ signIn, signOut, user, userName, darkMode, setDarkMode }) {
 	const [aboutOpen, setAboutOpen] = useState(false);
 	const [howToOpen, setHowToOpen] = useState(false);
+	const [endOpen, setEndOpen] = useState(true);
 	const [drawer, setDrawer] = useState(false);
 
 	const toggleDrawer = (open) => (event) => {
@@ -43,6 +44,7 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 	const handleAboutClose = () => setAboutOpen(false);
 	const handleHowToOpen = () => setHowToOpen(true);
 	const handleHowToClose = () => setHowToOpen(false);
+	const handleEndClose = () => setEndOpen(false);
 
 	const list = (anchor) => (
 		<Box
@@ -106,13 +108,13 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 					<h2>
 						About
 					</h2>
-						Commons is an minimal city-builder web app. Users build persistent cities in an asynchronous multiplayer mosaic of 40x40 squares. Its mechanics are based on Sim City 1989.
+						Commons was a minimal city-builder mmo. Users built persistent cities in an asynchronous multiplayer mosaic of 40x40 squares. Its mechanics are based on Sim City 1989.
 						<hr />
 						The front end was built with React, leaning heavily on HTML Canvas and Material UI. 
 						<br/>
 						The back end was built using Node.js, Express, and GCP.
 						<br/>
-						For more information, see the <a href="https://www.google.com/" target="_blank" rel="noreferrer">overlong technical blog</a>
+						For more information, see the <a href="https://cnqso.github.io/#/Blog/post/commons" target="_blank" rel="noreferrer">overlong technical blog</a>
 						<div className='centerSpan'>
 						   <WebsiteIcon ic="menubtn"/> <GithubIcon ic="menubtn"/>  
 						</div>
@@ -143,6 +145,16 @@ export default function NavBar({ signIn, signOut, user, userName, darkMode, setD
 						There are 8 plots around you, each of which can be built on by another player. You can connect your towns together through roads, 
 						power lines, or adjacent buildings. This may be mutually beneficial, but it may also be detrimental to one or both of you. Consider
 						the relative supply and demand of your zones before connecting.
+				</Box>
+			</Modal>
+			<Modal open={endOpen} onClose={handleEndClose} aria-labelledby='modal-end'>
+				<Box sx={modalStyle}>
+					<h2>
+						Thanks for playing!
+					</h2>
+						After a year, I've made the decision to close Commons. My dearest apologies to the fine folks who were still playing after all that time. Thanks! 💖
+						<hr />
+						More detail <a href="https://cnqso.github.io/#/Blog/post/commons-hubris" target="_blank" rel="noreferrer"> here.</a>
 				</Box>
 			</Modal>
 			<AppBar position='static' sx={{color: 'appBarText', backgroundColor: 'appBar'}} >

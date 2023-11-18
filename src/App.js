@@ -21,66 +21,66 @@ import DialogContentText from "@mui/material/DialogContentText";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 
-import { initializeApp } from "firebase/app";
-// import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { getDatabase, ref, get, child } from "firebase/database";
-import { useAuthState } from "react-firebase-hooks/auth";
+// import { initializeApp } from "firebase/app";
+// // import { getAnalytics } from "firebase/analytics";
+// import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+// import { getDatabase, ref, get, child } from "firebase/database";
+// import { useAuthState } from "react-firebase-hooks/auth";
 import useMediaQuery from "@mui/material/useMediaQuery";
 
-const firebaseConfig = {
-	apiKey: process.env.REACT_APP_PRIV_KEY,
-	authDomain: "reactcommons.firebaseapp.com",
-	databaseURL: "https://reactcommons-default-rtdb.firebaseio.com",
-	projectId: "reactcommons",
-	storageBucket: "reactcommons.appspot.com",
-	messagingSenderId: "1065691708142",
-	appId: "1:1065691708142:web:11c9050fc656410b9b11ff",
-	measurementId: "G-PQHKRQWR78",
-};
+// const firebaseConfig = {
+// 	apiKey: process.env.REACT_APP_PRIV_KEY,
+// 	authDomain: "reactcommons.firebaseapp.com",
+// 	databaseURL: "https://reactcommons-default-rtdb.firebaseio.com",
+// 	projectId: "reactcommons",
+// 	storageBucket: "reactcommons.appspot.com",
+// 	messagingSenderId: "1065691708142",
+// 	appId: "1:1065691708142:web:11c9050fc656410b9b11ff",
+// 	measurementId: "G-PQHKRQWR78",
+// };
 //Initialize fb modules
-const app = initializeApp(firebaseConfig);
-// const analytics = getAnalytics(app);
-const auth = getAuth(app);
-const database = getDatabase(app);
-const userListRef = ref(database, "userList");
-const userTilesRef = ref(database, "userTiles");
+// const app = initializeApp(firebaseConfig);
+// // const analytics = getAnalytics(app);
+// const auth = getAuth(app);
+// const database = getDatabase(app);
+// const userListRef = ref(database, "userList");
+// const userTilesRef = ref(database, "userTiles");
 
-function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
-	const url = "https://us-central1-reactcommons.cloudfunctions.net/expressApi/" + handler;
-	const body = JSON.stringify({
-		folder: folder,
-		id: buildingId,
-		x: x,
-		y: y,
-		building: building,
-	});
-	const xhr = new XMLHttpRequest();
-	xhr.withCredentials = false;
-	xhr.responseType = "text";
+// function sendRequest(method, y, x, building, buildingId, folder, handler = "") {
+// 	const url = "https://us-central1-reactcommons.cloudfunctions.net/expressApi/" + handler;
+// 	const body = JSON.stringify({
+// 		folder: folder,
+// 		id: buildingId,
+// 		x: x,
+// 		y: y,
+// 		building: building,
+// 	});
+// 	const xhr = new XMLHttpRequest();
+// 	xhr.withCredentials = false;
+// 	xhr.responseType = "text";
 
-	xhr.addEventListener("readystatechange", function () {
-		if (this.readyState === this.DONE) {
-			const response = this.responseText;
-			if (response) {
-				console.log(response);
-				return response;
-			}
-		}
-	});
-	auth.currentUser
-		.getIdToken(/* forceRefresh */ true)
-		.then(function (idToken) {
-			xhr.open(method, url);
-			xhr.setRequestHeader("Authorization", idToken);
-			xhr.setRequestHeader("Content-Type", "application/json");
-			xhr.send(body);
-		})
-		.catch(function (error) {
-			console.log(error);
-			return error;
-		});
-}
+// 	xhr.addEventListener("readystatechange", function () {
+// 		if (this.readyState === this.DONE) {
+// 			const response = this.responseText;
+// 			if (response) {
+// 				console.log(response);
+// 				return response;
+// 			}
+// 		}
+// 	});
+// 	auth.currentUser
+// 		.getIdToken(/* forceRefresh */ true)
+// 		.then(function (idToken) {
+// 			xhr.open(method, url);
+// 			xhr.setRequestHeader("Authorization", idToken);
+// 			xhr.setRequestHeader("Content-Type", "application/json");
+// 			xhr.send(body);
+// 		})
+// 		.catch(function (error) {
+// 			console.log(error);
+// 			return error;
+// 		});
+// }
 
 function reverseSquareSpiral(coordinates) {
 	const [x, y] = coordinates;
@@ -131,28 +131,28 @@ const darkTheme = createTheme({
 		background: {
 			default: "#181818",
 		},
-		appBar: '#121212',
-		appBarText: '#fff',
+		appBar: "#121212",
+		appBarText: "#fff",
 	},
-
 });
 
 const lightTheme = createTheme({
 	palette: {
-	  mode: 'light',
-	  primary: {
-		main: "#32CD32",
+		mode: "light",
+		primary: {
+			main: "#32CD32",
+		},
+		background: {
+			default: "#ccffdd",
+		},
+		appBar: "paleGreen",
+		appBarText: "black",
 	},
-	  background: {
-		default: "#ccffdd",
-	},
-	  appBar: 'paleGreen',
-	  appBarText: 'black',
-	},
-  });
+});
 
 function App() {
-	const [user] = useAuthState(auth);
+	// const [user] = useAuthState(auth);
+	const user = null;
 	const [mapSelection, setMapSelection] = useState("city");
 	const [userData, setUserData] = useState({});
 	const userNameInput = useRef("");
@@ -179,119 +179,119 @@ function App() {
 		themeString = "dark";
 	}
 
-	useEffect(() => {
-		if (user && !loggedIn) {
-			get(child(userListRef, user.uid)).then((snapshot) => {
-				if (snapshot.exists()) {
-					console.log("relogging in!");
-					commonsLogin(snapshot.val());
-				}
-			});
-		}
-	}, [user]);
+	// useEffect(() => {
+	// 	if (user && !loggedIn) {
+	// 		get(child(userListRef, user.uid)).then((snapshot) => {
+	// 			if (snapshot.exists()) {
+	// 				console.log("relogging in!");
+	// 				commonsLogin(snapshot.val());
+	// 			}
+	// 		});
+	// 	}
+	// }, [user]);
 
-	const signInWithGoogle = () => {
-		const provider = new GoogleAuthProvider();
-		signInWithPopup(auth, provider).then((result) => {
-			get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
-				if (snapshot.exists()) {
-					commonsLogin(snapshot.val());
-				} else {
-					setOpen(true);
-				}
-			});
-		});
-	};
+	// const signInWithGoogle = () => {
+	// 	const provider = new GoogleAuthProvider();
+	// 	signInWithPopup(auth, provider).then((result) => {
+	// 		get(child(userListRef, auth.currentUser.uid)).then((snapshot) => {
+	// 			if (snapshot.exists()) {
+	// 				commonsLogin(snapshot.val());
+	// 			} else {
+	// 				setOpen(true);
+	// 			}
+	// 		});
+	// 	});
+	// };
 
-	const signOut = () => {
-		setOpen(false);
-		auth.signOut();
-		setLoggedIn(false);
-	};
+	// const signOut = () => {
+	// 	setOpen(false);
+	// 	auth.signOut();
+	// 	setLoggedIn(false);
+	// };
 
-	function handleNewUser() {
-		const userName = userNameInput.current.value;
-		if (userName === "") {
-			signOut();
-			return;
-		}
+	// function handleNewUser() {
+	// 	const userName = userNameInput.current.value;
+	// 	if (userName === "") {
+	// 		signOut();
+	// 		return;
+	// 	}
 
-		newUserRequest("POST", auth.currentUser.uid, userName);
-	}
+	// 	newUserRequest("POST", auth.currentUser.uid, userName);
+	// }
 
-	const commonsLogin = ({ location, money, userName }) => {
-		setUserData({ location, money, userName });
-		console.log(`Logging in ${userName} - uid ${auth.currentUser.uid} - at ${location} with $${money}`);
-		setMapDataLocation(`userData/${auth.currentUser.uid}`);
+	// const commonsLogin = ({ location, money, userName }) => {
+	// 	setUserData({ location, money, userName });
+	// 	console.log(`Logging in ${userName} - uid ${auth.currentUser.uid} - at ${location} with $${money}`);
+	// 	setMapDataLocation(`userData/${auth.currentUser.uid}`);
 
-		let surroundingTiles = [];
-		const surroundingUsers = reverseSquareSpiral(location);
-		for (let i = 0; i < 8; i++) {
-			get(child(userTilesRef, surroundingUsers[i].toString())).then((snapshot) => {
-				if (snapshot.exists()) {
-					surroundingTiles[i] = snapshot.val();
-				} else {
-					surroundingTiles[i] = emptyPlot;
-				}
-			});
-		}
-		setNeighborTiles(surroundingTiles);
-		setLoggedIn(true);
-		// setMapSelection("city")
-		// setMapSelection("resDemand")
-		// setTimeout(() => {
-		// 	console.log("setting map selection to city")
-		// 	setMapSelection("city")
-		// }, 200);
-	};
+	// 	let surroundingTiles = [];
+	// 	const surroundingUsers = reverseSquareSpiral(location);
+	// 	for (let i = 0; i < 8; i++) {
+	// 		get(child(userTilesRef, surroundingUsers[i].toString())).then((snapshot) => {
+	// 			if (snapshot.exists()) {
+	// 				surroundingTiles[i] = snapshot.val();
+	// 			} else {
+	// 				surroundingTiles[i] = emptyPlot;
+	// 			}
+	// 		});
+	// 	}
+	// 	setNeighborTiles(surroundingTiles);
+	// 	setLoggedIn(true);
+	// 	// setMapSelection("city")
+	// 	// setMapSelection("resDemand")
+	// 	// setTimeout(() => {
+	// 	// 	console.log("setting map selection to city")
+	// 	// 	setMapSelection("city")
+	// 	// }, 200);
+	// };
 
-	function newUserRequest(method, userId, folder) {
-		const url = "https://us-central1-reactcommons.cloudfunctions.net/expressApi/newUser/";
-		const body = JSON.stringify({
-			folder: folder,
-			id: userId,
-		});
-		const xhr = new XMLHttpRequest();
-		xhr.withCredentials = false;
-		xhr.responseType = "text";
+	// function newUserRequest(method, userId, folder) {
+	// 	const url = "https://us-central1-reactcommons.cloudfunctions.net/expressApi/newUser/";
+	// 	const body = JSON.stringify({
+	// 		folder: folder,
+	// 		id: userId,
+	// 	});
+	// 	const xhr = new XMLHttpRequest();
+	// 	xhr.withCredentials = false;
+	// 	xhr.responseType = "text";
 
-		xhr.addEventListener("readystatechange", function () {
-			if (this.readyState === this.DONE) {
-				const response = this.responseText;
-				if (response) {
-					console.log(response);
-					const location = response.split(",");
-					setOpen(false);
-					commonsLogin({ location: [location[1], location[2]], money: 1000, userName: body.id });
-					return response;
-				}
-			}
-		});
-		auth.currentUser
-			.getIdToken(/* forceRefresh */ true)
-			.then(function (idToken) {
-				xhr.open(method, url);
-				xhr.setRequestHeader("Authorization", idToken);
-				xhr.setRequestHeader("Content-Type", "application/json");
-				xhr.send(body);
-			})
-			.catch(function (error) {
-				console.log(error);
-				signOut();
-				return error;
-			});
-	}
+	// 	xhr.addEventListener("readystatechange", function () {
+	// 		if (this.readyState === this.DONE) {
+	// 			const response = this.responseText;
+	// 			if (response) {
+	// 				console.log(response);
+	// 				const location = response.split(",");
+	// 				setOpen(false);
+	// 				commonsLogin({ location: [location[1], location[2]], money: 1000, userName: body.id });
+	// 				return response;
+	// 			}
+	// 		}
+	// 	});
+	// 	auth.currentUser
+	// 		.getIdToken(/* forceRefresh */ true)
+	// 		.then(function (idToken) {
+	// 			xhr.open(method, url);
+	// 			xhr.setRequestHeader("Authorization", idToken);
+	// 			xhr.setRequestHeader("Content-Type", "application/json");
+	// 			xhr.send(body);
+	// 		})
+	// 		.catch(function (error) {
+	// 			console.log(error);
+	// 			signOut();
+	// 			return error;
+	// 		});
+	// }
 
 	return (
 		<ThemeProvider theme={theme}>
-		<div className='App' style={{backgroundColor: theme.palette.background.default}}>
-			<link
-				rel='stylesheet'
-				href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap'
-			/>
-		
+			<div className='App' style={{ backgroundColor: theme.palette.background.default }}>
+				<link
+					rel='stylesheet'
+					href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap'
+				/>
+
 				<CssBaseline />
-				<Dialog open={open} onClose={signOut}>
+				{/*<Dialog open={open} onClose={signOut}>
 					<DialogContent>
 						<DialogContentText>Choose a new userName</DialogContentText>
 						<TextField
@@ -306,11 +306,11 @@ function App() {
 						<Button onClick={signOut}>Cancel</Button>
 						<Button onClick={handleNewUser}>Start</Button>
 					</DialogActions>
-				</Dialog>
+	</Dialog>*/}
 
 				<NavBar
-					signIn={signInWithGoogle}
-					signOut={signOut}
+					signIn={() => null}
+					signOut={() => null}
 					user={loggedIn}
 					userName={userData.userName}
 					darkMode={darkMode}
@@ -323,7 +323,7 @@ function App() {
 							setEditSelection={setEditSelection}
 							mapSelection={mapSelection}
 							setMapSelection={setMapSelection}
-							sendRequest={sendRequest}
+							sendRequest={() => null}
 							userData={userData}
 							theme={theme}
 						/>
@@ -332,7 +332,7 @@ function App() {
 							key={mapDataLocation}
 							editSelection={editSelection}
 							mapSelection={mapSelection}
-							sendRequest={sendRequest}
+							sendRequest={() => null}
 							mapDataLocation={mapDataLocation}
 							neighborTiles={neighborTiles}
 							userData={userData}
@@ -348,7 +348,6 @@ function App() {
 							style={{
 								position: "relative",
 							}}>
-							<Welcome />
 							<Space
 								style={{ border: "solid 1px black" }}
 								onCreate={(viewPort) => {
@@ -377,8 +376,8 @@ function App() {
 						</div>
 					</>
 				)}
-		</div>
-			</ThemeProvider>
+			</div>
+		</ThemeProvider>
 	);
 }
 
