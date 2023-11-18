@@ -1,0 +1,16 @@
+{
+  "files": {
+    "main.css": "/webcommons/static/css/main.65616084.css",
+    "main.js": "/webcommons/static/js/main.6b5e6194.js",
+    "static/js/787.ec8c5435.chunk.js": "/webcommons/static/js/787.ec8c5435.chunk.js",
+    "static/media/newtTileset.png": "/webcommons/static/media/newtTileset.928911c7ba4210ff93aa.png",
+    "index.html": "/webcommons/index.html",
+    "main.65616084.css.map": "/webcommons/static/css/main.65616084.css.map",
+    "main.6b5e6194.js.map": "/webcommons/static/js/main.6b5e6194.js.map",
+    "787.ec8c5435.chunk.js.map": "/webcommons/static/js/787.ec8c5435.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.65616084.css",
+    "static/js/main.6b5e6194.js"
+  ]
+}
